@@ -16,6 +16,8 @@ logging.basicConfig(level=logging.DEBUG)
 
 # Хранилище данных о сессиях.
 sessionStorage = {}
+# Хранилище данных о пользователях
+user = {}
 
 # Задаем параметры приложения Flask.
 @app.route("/", methods=['POST'])
@@ -70,7 +72,7 @@ def handle_dialog(req, res):
     ]:
         # Если пользователь прислал один из вариантов, то играем с ним
         res['response']['text'] = gameStatus(req['request']['command'].lower())
-        # res['response']['buttons'] = getSuggests(user_id)
+        res['response']['buttons'] = getSuggests(user_id)
         return
 
     # Если нет, то снова предлагаем сыграть
@@ -80,14 +82,18 @@ def handle_dialog(req, res):
 
 
 # верну случайный элемент
-def answer():
+def answer(weights=[1, 1, 1]):
     answers = ['камень', 'ножницы', 'бумага']
-    return choices(answers)[0]
+    return choices(answers, weights=weights)[0]
 
 
 # результат матча
-def gameStatus(user_choice):
-    bot_choice = answer()
+def gameStatus(user_choice, is_first=False):
+    # Известно, что первыми чаще всего выкидывают ножницы (до 70 % случаев)
+    if is_first:
+        bot_choice = answer(weights=[1.5, 7, 1.5])
+    else:
+        bot_choice = answer()
     if bot_choice == user_choice:
         return 'Ничья. Игра тоже выбрала {}.'.format(bot_choice)
     elif (bot_choice == 'камень' and user_choice == 'ножницы') or\
