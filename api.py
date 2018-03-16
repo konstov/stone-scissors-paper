@@ -54,9 +54,9 @@ def handle_dialog(req, res):
 
         sessionStorage[user_id] = {
             'suggests': [
-                "камень",
-                "ножницы",
-                "бумага",
+                "✊",
+                "✌",
+                "✋",
             ]
         }
 
@@ -65,27 +65,36 @@ def handle_dialog(req, res):
         return
 
     # Обрабатываем ответ пользователя.
-    if req['request']['command'].lower() in [
-        'камень',
-        'ножницы',
-        'бумага',
-    ]:
+    if req['request']['command'].lower() in ['✊', '✌', '✋', 'ножницы', 'камень', 'бумага']:
         # Если пользователь прислал один из вариантов, то играем с ним
         res['response']['text'] = gameStatus(req['request']['command'].lower())
         res['response']['buttons'] = getSuggests(user_id)
         return
 
     # Если нет, то снова предлагаем сыграть
-    res['response']['text'] = 'Что-то не то... Ты уверен, что хотел сказать "{0}"? Может быть ты имел ввиду "{1}"?'.\
+    res['response']['text'] = 'Что-то не то... Вы уверены, что хотели сказать "{0}"? Может быть вы имели ввиду "{1}"?'.\
         format(req['request']['command'], answer())
     res['response']['buttons'] = getSuggests(user_id)
 
 
 # верну случайный элемент
 def answer(weights=[1, 1, 1]):
-    answers = ['камень', 'ножницы', 'бумага']
+    answers = ['✊', '✌', '✋']
     return choices(answers, weights=weights)[0]
 
+
+def botChoiceTextMapper(bot_choice):
+    if bot_choice == '✊':
+        'камень'
+    elif bot_choice == '✋':
+        return 'бумага'
+    elif bot_choice == '✌':
+        return 'ножницы'
+
+
+def newRoundInvitation():
+    phraces = ['Ещё разок?', 'Давайте ещё?', 'Играем дальше?', 'Ваш ход!']
+    return choices(phraces)[0]
 
 # результат матча
 def gameStatus(user_choice, is_first=False):
@@ -94,21 +103,27 @@ def gameStatus(user_choice, is_first=False):
         bot_choice = answer(weights=[1.5, 7, 1.5])
     else:
         bot_choice = answer()
-    if bot_choice == user_choice:
-        return 'Ничья. Игра тоже выбрала {}.'.format(bot_choice)
-    elif (bot_choice == 'камень' and user_choice == 'ножницы') or\
-         (bot_choice == 'ножницы' and user_choice == 'бумага') or\
-         (bot_choice == 'бумага' and user_choice == 'камень'):
-        return 'Вы проиграли =(, игра выбрала {}.'.format(bot_choice)
-    else:
-        return 'Вы выиграли! Игра выбрала {}.'.format(bot_choice)
 
+    bot_choice_text = botChoiceTextMapper(bot_choice)
+
+    if user_choice in [bot_choice, bot_choice_text]:
+        phrace = 'Ничья 🤝. Игра тоже выбрала {}. '.format(bot_choice)
+
+    elif (bot_choice == '✊' and user_choice in ['ножницы', '✌']) or\
+         (bot_choice == '✌' and user_choice in ['бумага', '✋']) or\
+         (bot_choice == '✋' and user_choice in ['камень', '✊']):
+        phrace = 'Вы проиграли 😕, игра выбрала {}. '.format(bot_choice)
+
+    else:
+        phrace = 'Вы выиграли 🙌! Игра выбрала {}. '.format(bot_choice)
+
+    return phrace + newRoundInvitation()
 
 # Функция возвращает три подсказки для ответа.
 def getSuggests(user_id):
     session = sessionStorage[user_id]
 
-    # Выбираем две первые подсказки из массива.
+    # Выбираем три подсказки
     suggests = [
         {'title': suggest, 'hide': True}
         for suggest in session['suggests'][:3]
