@@ -85,11 +85,11 @@ def answer(weights=[1, 1, 1]):
 
 def botChoiceTextMapper(bot_choice):
     if bot_choice == '✊':
-        return 'камень'
+        return 'камень ✊'
     elif bot_choice == '✋':
-        return 'бумагу'
+        return 'бумагу ✋'
     elif bot_choice == '✌':
-        return 'ножницы'
+        return 'ножницы ✌'
 
 
 def newRoundInvitation():
