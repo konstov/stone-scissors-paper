@@ -54,9 +54,9 @@ def handle_dialog(req, res):
 
         sessionStorage[user_id] = {
             'suggests': [
-                "✊",
-                "✌",
-                "✋",
+                "камень",
+                "ножницы",
+                "бумага",
             ]
         }
 
@@ -85,9 +85,9 @@ def answer(weights=[1, 1, 1]):
 
 def botChoiceTextMapper(bot_choice):
     if bot_choice == '✊':
-        'камень'
+        return 'камень'
     elif bot_choice == '✋':
-        return 'бумага'
+        return 'бумагу'
     elif bot_choice == '✌':
         return 'ножницы'
 
@@ -107,15 +107,15 @@ def gameStatus(user_choice, is_first=False):
     bot_choice_text = botChoiceTextMapper(bot_choice)
 
     if user_choice in [bot_choice, bot_choice_text]:
-        phrace = 'Ничья 🤝. Игра тоже выбрала {}. '.format(bot_choice)
+        phrace = 'Ничья 🤝. Игра тоже выбрала {}. '.format(bot_choice_text)
 
     elif (bot_choice == '✊' and user_choice in ['ножницы', '✌']) or\
          (bot_choice == '✌' and user_choice in ['бумага', '✋']) or\
          (bot_choice == '✋' and user_choice in ['камень', '✊']):
-        phrace = 'Вы проиграли 😕, игра выбрала {}. '.format(bot_choice)
+        phrace = 'Вы проиграли 😕, игра выбрала {}. '.format(bot_choice_text)
 
     else:
-        phrace = 'Вы выиграли 🙌! Игра выбрала {}. '.format(bot_choice)
+        phrace = 'Вы выиграли 🙌! Игра выбрала {}. '.format(bot_choice_text)
 
     return phrace + newRoundInvitation()
 
