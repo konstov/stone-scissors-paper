@@ -61,6 +61,7 @@ def handle_dialog(req, res):
         }
 
         res['response']['text'] = 'Привет! Сыграем в камень-ножницы-бумага!'
+        res['response']['tts'] = 'Привет!   Сыграем в камень ножницы бумага!'
         res['response']['buttons'] = getSuggests(user_id)
         return
 
@@ -68,11 +69,14 @@ def handle_dialog(req, res):
     if req['request']['command'].lower() in ['✊', '✌', '✋', 'ножницы', 'камень', 'бумага']:
         # Если пользователь прислал один из вариантов, то играем с ним
         res['response']['text'] = gameStatus(req['request']['command'].lower())
+        res['response']['tts'] = gameStatus(req['request']['command'].lower())
         res['response']['buttons'] = getSuggests(user_id)
         return
 
     # Если нет, то снова предлагаем сыграть
     res['response']['text'] = 'Что-то не то... Вы уверены, что хотели сказать "{0}"? Может быть вы имели ввиду "{1}"?'.\
+        format(req['request']['command'], answer())
+    res['response']['tts'] = 'Что-то не то.   Вы уверены, что хотели сказать "{0}"? Может быть вы имели ввиду "{1}"?'. \
         format(req['request']['command'], answer())
     res['response']['buttons'] = getSuggests(user_id)
 
