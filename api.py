@@ -121,19 +121,19 @@ def gameStatus(user_choice, is_first=False):
     bot_choice_text = botChoiceTextMapper(bot_choice)
 
     if user_choice in [bot_choice, bot_choice_text]:
-        text_answer = 'Ничья 🤝. Игра тоже выбрала {}. '.format(bot_choice_text)
+        text_answer = 'Ничья 🤝. Игра тоже выбрала {}. '.format(bot_choice)
         sound_answer = 'Ничья. - - - Игра тоже выбрала {}'.format(bot_choice_text)
 
     elif (bot_choice == '✊' and user_choice in ['ножницы', '✌']) or\
          (bot_choice == '✌' and user_choice in ['бумага', '✋']) or\
          (bot_choice == '✋' and user_choice in ['камень', '✊']):
         text_answer = 'Вы проиграли {}, игра выбрала {}.'.format(choices(constants.SAD_EMOTICONS)[0],
-                                                                 bot_choice_text)
+                                                                 bot_choice)
         sound_answer = 'Вы проиграли. - - - Игра выбрала {}.'.format(bot_choice_text)
 
     else:
         text_answer = 'Вы выиграли {}! Игра выбрала {}. '.format(choices(constants.HAPPY_EMOTICONS)[0],
-                                                                bot_choice_text)
+                                                                bot_choice)
         sound_answer = 'Вы выиграли! - - - Игра выбрала {}.'.format(bot_choice_text)
 
     return text_answer, sound_answer#  + newRoundInvitation()
