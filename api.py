@@ -69,7 +69,6 @@ def handle_dialog(req, res):
         res['response']['text'] = 'Привет! Сыграем в камень-ножницы-бумага!'
         res['response']['tts'] = 'Привет! - - - Сыграем в камень ножницы бумага!'
         res['response']['buttons'] = getSuggests(user_id)
-        newRoundInvitation()
         return
 
     # Обрабатываем ответ пользователя.
@@ -80,7 +79,6 @@ def handle_dialog(req, res):
         res['response']['text'] = text_answer
         res['response']['tts'] = sound_answer
         res['response']['buttons'] = getSuggests(user_id)
-        newRoundInvitation()
         return
 
     # Если нет, то снова предлагаем сыграть
@@ -122,7 +120,7 @@ def gameStatus(user_choice, is_first=False):
 
     if user_choice in [bot_choice, bot_choice_text]:
         text_answer = 'Ничья 🤝. Игра тоже выбрала {}. '.format(bot_choice)
-        sound_answer = 'Ничья. - - - Игра тоже выбрала {}'.format(bot_choice_text_for_speech)
+        sound_answer = 'Ничья. - - - Игра тоже выбрала {}.'.format(bot_choice_text_for_speech)
 
     elif (bot_choice == '✊' and user_choice in ['ножницы', '✌']) or\
          (bot_choice == '✌' and user_choice in ['бумага', '✋']) or\
@@ -132,11 +130,11 @@ def gameStatus(user_choice, is_first=False):
         sound_answer = 'Вы проиграли. - - - Игра выбрала {}.'.format(bot_choice_text_for_speech)
 
     else:
-        text_answer = 'Вы выиграли {}! Игра выбрала {}. '.format(choices(constants.HAPPY_EMOTICONS)[0],
+        text_answer = 'Вы выиграли {}! Игра выбрала {}.'.format(choices(constants.HAPPY_EMOTICONS)[0],
                                                                 bot_choice)
         sound_answer = 'Вы выиграли! - - - Игра выбрала {}.'.format(bot_choice_text_for_speech)
 
-    return text_answer, sound_answer#  + newRoundInvitation()
+    return text_answer + newRoundInvitation(), sound_answer
 
 # Функция возвращает три подсказки для ответа.
 def getSuggests(user_id):
