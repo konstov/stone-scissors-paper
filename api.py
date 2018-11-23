@@ -62,7 +62,7 @@ def handle_dialog(req, res):
             'suggests': [
                 "камень",
                 "ножницы",
-                "бумага",
+                "бумага"
             ]
         }
 
@@ -97,14 +97,14 @@ def answer(weights=[1, 1, 1]):
     answers = ['✊', '✌', '✋']
     return choices(answers, weights=weights)[0]
 
-
+# возвращает начальную форму и правильное произношение
 def botChoiceTextMapper(bot_choice):
     if bot_choice == '✊':
-        return 'камень'
+        return 'камень', 'камень'
     elif bot_choice == '✋':
-        return 'бумагу'
+        return 'бумага', 'бумагу'
     elif bot_choice == '✌':
-        return 'ножницы'
+        return 'ножницы', 'ножницы'
 
 
 def newRoundInvitation():
@@ -118,23 +118,23 @@ def gameStatus(user_choice, is_first=False):
     else:
         bot_choice = answer()
 
-    bot_choice_text = botChoiceTextMapper(bot_choice)
+    bot_choice_text, bot_choice_text_for_speech = botChoiceTextMapper(bot_choice)
 
     if user_choice in [bot_choice, bot_choice_text]:
         text_answer = 'Ничья 🤝. Игра тоже выбрала {}. '.format(bot_choice)
-        sound_answer = 'Ничья. - - - Игра тоже выбрала {}'.format(bot_choice_text)
+        sound_answer = 'Ничья. - - - Игра тоже выбрала {}'.format(bot_choice_text_for_speech)
 
     elif (bot_choice == '✊' and user_choice in ['ножницы', '✌']) or\
          (bot_choice == '✌' and user_choice in ['бумага', '✋']) or\
          (bot_choice == '✋' and user_choice in ['камень', '✊']):
         text_answer = 'Вы проиграли {}, игра выбрала {}.'.format(choices(constants.SAD_EMOTICONS)[0],
                                                                  bot_choice)
-        sound_answer = 'Вы проиграли. - - - Игра выбрала {}.'.format(bot_choice_text)
+        sound_answer = 'Вы проиграли. - - - Игра выбрала {}.'.format(bot_choice_text_for_speech)
 
     else:
         text_answer = 'Вы выиграли {}! Игра выбрала {}. '.format(choices(constants.HAPPY_EMOTICONS)[0],
                                                                 bot_choice)
-        sound_answer = 'Вы выиграли! - - - Игра выбрала {}.'.format(bot_choice_text)
+        sound_answer = 'Вы выиграли! - - - Игра выбрала {}.'.format(bot_choice_text_for_speech)
 
     return text_answer, sound_answer#  + newRoundInvitation()
 
