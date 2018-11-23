@@ -105,8 +105,11 @@ def botChoiceTextMapper(bot_choice):
         return 'ножницы', 'ножницы'
 
 
-def newRoundInvitation():
-    return choices(constants.NEW_ROUND_INVITATION)[0]
+def newRoundInvitation(isLoose):
+    if not isLoose:
+        return choices(constants.NEW_ROUND_INVITATION)[0]
+    else:
+        return choices(constants.NEW_ROUND_INVITATION_WIN_BACK)[0]
 
 # результат матча
 def gameStatus(user_choice, is_first=False):
@@ -118,23 +121,32 @@ def gameStatus(user_choice, is_first=False):
 
     bot_choice_text, bot_choice_text_for_speech = botChoiceTextMapper(bot_choice)
 
+    # ничья
     if user_choice in [bot_choice, bot_choice_text]:
         text_answer = 'Ничья 🤝. Игра тоже выбрала {}. '.format(bot_choice)
-        sound_answer = 'Ничья. - - - Игра тоже выбрала {}.'.format(bot_choice_text_for_speech)
+        sound_answer = '{} - - - Ничья. - - - Игра тоже выбрала {}.'.format(choices(constants.NEUTRAL_SOUNDS)[0],
+                                                bot_choice_text_for_speech)
+        invitation = newRoundInvitation(isLoose=False)
 
+    # прогирыш
     elif (bot_choice == '✊' and user_choice in ['ножницы', '✌']) or\
          (bot_choice == '✌' and user_choice in ['бумага', '✋']) or\
          (bot_choice == '✋' and user_choice in ['камень', '✊']):
-        text_answer = 'Вы проиграли {}, игра выбрала {}.'.format(choices(constants.SAD_EMOTICONS)[0],
+        text_answer = 'Вы проиграли {}, игра выбрала {}. '.format(choices(constants.SAD_EMOTICONS)[0],
                                                                  bot_choice)
-        sound_answer = 'Вы проиграли. - - - Игра выбрала {}.'.format(bot_choice_text_for_speech)
+        sound_answer = '{} - - - Вы проиграли. - - - Игра выбрала {}.'.format(choices(constants.SAD_SOUNDS)[0],
+                       bot_choice_text_for_speech)
+        invitation = newRoundInvitation(isLoose=True)
 
+    # победа
     else:
-        text_answer = 'Вы выиграли {}! Игра выбрала {}.'.format(choices(constants.HAPPY_EMOTICONS)[0],
+        text_answer = 'Вы выиграли {}! Игра выбрала {}. '.format(choices(constants.HAPPY_EMOTICONS)[0],
                                                                 bot_choice)
-        sound_answer = 'Вы выиграли! - - - Игра выбрала {}.'.format(bot_choice_text_for_speech)
+        sound_answer = '{} - - - Вы выиграли! - - - Игра выбрала {}.'.format(choices(constants.HAPPY_SOUNDS)[0],
+                                                                bot_choice_text_for_speech)
+        invitation = newRoundInvitation(isLoose=False)
 
-    return text_answer + newRoundInvitation(), sound_answer
+    return text_answer + invitation, sound_answer
 
 # Функция возвращает три подсказки для ответа.
 def getSuggests(user_id):
