@@ -11,6 +11,11 @@ import logging
 from flask import Flask, request
 app = Flask(__name__)
 
+# Импортирую свои модули
+from helpers import constants
+
+# некоторый набор констант, чтобы было удобно править их
+
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -21,6 +26,7 @@ user = {}
 
 # Задаем параметры приложения Flask.
 @app.route("/", methods=['POST'])
+
 
 def main():
 # Функция получает тело запроса и возвращает ответ.
@@ -61,23 +67,28 @@ def handle_dialog(req, res):
         }
 
         res['response']['text'] = 'Привет! Сыграем в камень-ножницы-бумага!'
-        res['response']['tts'] = 'Привет!   Сыграем в камень ножницы бумага!'
+        res['response']['tts'] = 'Привет! - - - Сыграем в камень ножницы бумага!'
         res['response']['buttons'] = getSuggests(user_id)
+        newRoundInvitation()
         return
 
     # Обрабатываем ответ пользователя.
-    if req['request']['command'].lower() in ['✊', '✌', '✋', 'ножницы', 'камень', 'бумага']:
+    if req['request']['command'].lower() in constants.TRUE_ANSWERS:
         # Если пользователь прислал один из вариантов, то играем с ним
-        res['response']['text'] = gameStatus(req['request']['command'].lower())
-        res['response']['tts'] = gameStatus(req['request']['command'].lower())
+        text_answer, sound_answer = gameStatus(req['request']['command'].lower())
+
+        res['response']['text'] = text_answer
+        res['response']['tts'] = sound_answer
         res['response']['buttons'] = getSuggests(user_id)
+        newRoundInvitation()
         return
 
     # Если нет, то снова предлагаем сыграть
+    random_answer = answer()
     res['response']['text'] = 'Что-то не то... Вы уверены, что хотели сказать "{0}"? Может быть вы имели ввиду "{1}"?'.\
-        format(req['request']['command'], answer())
-    res['response']['tts'] = 'Что-то не то.   Вы уверены, что хотели сказать "{0}"? Может быть вы имели ввиду "{1}"?'. \
-        format(req['request']['command'], answer())
+        format(req['request']['command'], random_answer)
+    res['response']['tts'] = 'Что-то не то. - - - Вы уверены, что хотели сказать "{0}"? Может быть вы имели ввиду "{1}"?'. \
+        format(req['request']['command'], random_answer)
     res['response']['buttons'] = getSuggests(user_id)
 
 
@@ -89,16 +100,15 @@ def answer(weights=[1, 1, 1]):
 
 def botChoiceTextMapper(bot_choice):
     if bot_choice == '✊':
-        return 'камень ✊'
+        return 'камень'
     elif bot_choice == '✋':
-        return 'бумагу ✋'
+        return 'бумагу'
     elif bot_choice == '✌':
-        return 'ножницы ✌'
+        return 'ножницы'
 
 
 def newRoundInvitation():
-    phraces = ['Ещё разок?', 'Давайте ещё?', 'Играем дальше?', 'Ваш ход!']
-    return choices(phraces)[0]
+    return choices(constants.NEW_ROUND_INVITATION)[0]
 
 # результат матча
 def gameStatus(user_choice, is_first=False):
@@ -111,17 +121,22 @@ def gameStatus(user_choice, is_first=False):
     bot_choice_text = botChoiceTextMapper(bot_choice)
 
     if user_choice in [bot_choice, bot_choice_text]:
-        phrace = 'Ничья 🤝. Игра тоже выбрала {}. '.format(bot_choice_text)
+        text_answer = 'Ничья 🤝. Игра тоже выбрала {}. '.format(bot_choice_text)
+        sound_answer = 'Ничья. - - - Игра тоже выбрала {}'.format(bot_choice_text)
 
     elif (bot_choice == '✊' and user_choice in ['ножницы', '✌']) or\
          (bot_choice == '✌' and user_choice in ['бумага', '✋']) or\
          (bot_choice == '✋' and user_choice in ['камень', '✊']):
-        phrace = 'Вы проиграли 😕, игра выбрала {}. '.format(bot_choice_text)
+        text_answer = 'Вы проиграли {}, игра выбрала {}.'.format(choices(constants.SAD_EMOTICONS)[0],
+                                                                 bot_choice_text)
+        sound_answer = 'Вы проиграли. - - - Игра выбрала {}.'.format(bot_choice_text)
 
     else:
-        phrace = 'Вы выиграли 🙌! Игра выбрала {}. '.format(bot_choice_text)
+        text_answer = 'Вы выиграли {}! Игра выбрала {}. '.format(choices(constants.HAPPY_EMOTICONS)[0],
+                                                                bot_choice_text)
+        sound_answer = 'Вы выиграли! - - - Игра выбрала {}.'.format(bot_choice_text)
 
-    return phrace + newRoundInvitation()
+    return text_answer, sound_answer#  + newRoundInvitation()
 
 # Функция возвращает три подсказки для ответа.
 def getSuggests(user_id):
