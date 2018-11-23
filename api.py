@@ -128,17 +128,22 @@ def gameStatus(user_choice, is_first=False):
     # ничья
     if user_choice in [bot_choice, bot_choice_text]:
         invitation = newRoundInvitation(isLoose=False)
-        text_answer = '{}{}{} Игра тоже выбрала {}. '.format(choices(constants.NEUTRAL_PREFIXES)[0],
-                                                               choices(constants.NEUTRAL_MAIN_PHRASES)[0],
-                                                               choices(constants.NEUTRAL_EMOTICONS)[0],
-                                                               bot_choice
-                                                               )
-        sound_answer = '{} - - - {}{} - - - Игра тоже выбрала {}. {}'.format(choices(constants.NEUTRAL_SOUNDS)[0],
-                                                                            choices(constants.NEUTRAL_PREFIXES)[0],
-                                                                            choices(constants.NEUTRAL_MAIN_PHRASES)[0],
-                                                                            bot_choice_text_for_speech,
-                                                                            invitation
-                                                                               )
+        prefix = choices(constants.NEUTRAL_PREFIXES)[0]
+        main_phrase = choices(constants.NEUTRAL_MAIN_PHRASES)[0]
+        emoticon = choices(constants.NEUTRAL_EMOTICONS)[0]
+        sound = choices(constants.NEUTRAL_SOUNDS)[0]
+
+        text_answer = '{}{}{} Игра тоже выбрала {}. '.format(prefix,
+                                                             main_phrase,
+                                                             emoticon,
+                                                             bot_choice
+                                                            )
+        sound_answer = '{} - - - {}{} - - - Игра тоже выбрала {}. {}'.format(sound,
+                                                                             prefix,
+                                                                             main_phrase,
+                                                                             bot_choice_text_for_speech,
+                                                                             invitation
+                                                                            )
 
 
     # прогирыш
@@ -146,33 +151,42 @@ def gameStatus(user_choice, is_first=False):
             (bot_choice == '✌' and user_choice in ['бумага', '✋']) or \
             (bot_choice == '✋' and user_choice in ['камень', '✊']):
         invitation = newRoundInvitation(isLoose=True)
-        text_answer = '{}{}{}, игра выбрала {}. '.format(choices(constants.SAD_PREFIXES)[0],
-                                                           choices(constants.SAD_MAIN_PHRASES)[0],
-                                                           choices(constants.SAD_EMOTICONS)[0],
-                                                           bot_choice
-                                                           )
-        sound_answer = '{} - - - {}{} - - - Игра выбрала {}. {}'.format(choices(constants.SAD_SOUNDS)[0],
-                                                                                choices(constants.SAD_PREFIXES)[0],
-                                                                                choices(constants.SAD_MAIN_PHRASES)[0],
-                                                                                bot_choice_text_for_speech,
-                                                                                invitation
-                                                                                 )
+        prefix = choices(constants.SAD_PREFIXES)[0]
+        main_phrase = choices(constants.SAD_MAIN_PHRASES)[0]
+        emoticon = choices(constants.SAD_EMOTICONS)[0]
+        sound = choices(constants.SAD_SOUNDS)[0]
+
+        text_answer = '{}{}{}, игра выбрала {}. '.format(prefix,
+                                                         main_phrase,
+                                                         emoticon,
+                                                         bot_choice
+                                                         )
+        sound_answer = '{} - - - {}{} - - - Игра выбрала {}. {}'.format(sound,
+                                                                        prefix,
+                                                                        main_phrase,
+                                                                        bot_choice_text_for_speech,
+                                                                        invitation
+                                                                        )
 
 
     # победа
     else:
         invitation = newRoundInvitation(isLoose=False)
-        text_answer = '{}{}{} Игра выбрала {}. '.format(choices(constants.HAPPY_PREFIXES)[0],
-                                                           choices(constants.HAPPY_MAIN_PHRASES)[0],
-                                                           choices(constants.HAPPY_EMOTICONS)[0],
-                                                           bot_choice
-                                                           )
-        sound_answer = '{} - - - {}{} - - - Игра выбрала {}. {}'.format(choices(constants.HAPPY_SOUNDS)[0],
-                                                                                choices(constants.HAPPY_PREFIXES)[0],
-                                                                                choices(constants.HAPPY_MAIN_PHRASES)[0],
-                                                                                bot_choice_text_for_speech,
-                                                                                invitation
-                                                                                )
+        prefix = choices(constants.HAPPY_PREFIXES)[0]
+        main_phrase = choices(constants.HAPPY_MAIN_PHRASES)[0]
+        emoticon = choices(constants.HAPPY_EMOTICONS)[0]
+        sound = choices(constants.HAPPY_SOUNDS)[0]
+        text_answer = '{}{}{} Игра выбрала {}. '.format(prefix,
+                                                        main_phrase,
+                                                        emoticon,
+                                                        bot_choice
+                                                        )
+        sound_answer = '{} - - - {}{} - - - Игра выбрала {}. {}'.format(sound,
+                                                                        prefix,
+                                                                        main_phrase,
+                                                                        bot_choice_text_for_speech,
+                                                                        invitation
+                                                                        )
 
     return text_answer + invitation, sound_answer
 
