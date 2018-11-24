@@ -36,29 +36,32 @@ def gameStatus(user_choice, is_first=False):
 
     # ничья
     if user_choice in [bot_choice, bot_choice_text]:
+        round_result = 'tie'
         text_answer, sound_answer = prepare_answers(bot_choice=bot_choice,
                                                     bot_choice_text_for_speech=bot_choice_text_for_speech,
                                                     isLooser=False,
-                                                    roundResult='tie')
+                                                    roundResult=round_result)
 
     # проигрыш
     elif (bot_choice == '✊' and user_choice in ['ножницы', '✌']) or \
             (bot_choice == '✌' and user_choice in ['бумага', '✋']) or \
             (bot_choice == '✋' and user_choice in ['камень', '✊']):
+        round_result = 'loose'
 
         text_answer, sound_answer = prepare_answers(bot_choice=bot_choice,
                                                     bot_choice_text_for_speech=bot_choice_text_for_speech,
                                                     isLooser=True,
-                                                    roundResult='loose')
+                                                    roundResult=round_result)
 
     # победа
     else:
+        round_result = 'win'
         text_answer, sound_answer = prepare_answers(bot_choice=bot_choice,
                                                     bot_choice_text_for_speech=bot_choice_text_for_speech,
                                                     isLooser=False,
-                                                    roundResult='win')
+                                                    roundResult=round_result)
 
-    return text_answer, sound_answer
+    return text_answer, sound_answer, round_result
 
 
 # Функция возвращает подсказки для ответа.
@@ -129,3 +132,46 @@ def prepare_answers(bot_choice, bot_choice_text_for_speech, isLooser, roundResul
                                                   invitation
                                                   )
             ]
+
+
+def round_result_encoder(session_state, round_result):
+    if round_result == 'win':
+        session_state['wins'] += 1
+        session_state['wins_in_row'] += 1
+        session_state['looses_in_row'] = 0
+        session_state['ties_in_row'] = 0
+        return session_state
+
+    elif round_result == 'tie':
+        session_state['ties'] += 1
+        session_state['ties_in_row'] += 1
+        session_state['wins_in_row'] = 0
+        session_state['looses_in_row'] = 0
+        return session_state
+
+    elif round_result == 'loose':
+        session_state['looses'] += 1
+        session_state['looses_in_row'] += 1
+        session_state['ties_in_row'] = 0
+        session_state['wins_in_row'] = 0
+        return session_state
+
+
+def remarkable_metrics(session_state, limit):
+    if limit < 5:
+        if session_state['wins_in_row'] == limit:
+            return ' Кстати, уже {} победы к ряду! Это тянет на рекорд!'.format(limit)
+        elif session_state['ties_in_row'] == limit:
+            return ' Кстати, уже {} ничьи подряд. Надо начинать побеждать!'.format(limit)
+        elif session_state['looses_in_row'] == limit:
+            return ' Уже {} поражения подряд! Пора переломить ход игры!'.format(limit)
+        return ''
+
+    else:
+        if session_state['wins_in_row'] == limit:
+            return ' Кстати, уже {} побед к ряду! Это тянет на рекорд!'.format(limit)
+        elif session_state['ties_in_row'] == limit:
+            return ' Кстати, уже {} ничьих подряд. Надо побеждать!'.format(limit)
+        elif session_state['looses_in_row'] == limit:
+            return ' Кстати, уже {} поражений подряд! Пора переломить ход игры!'.format(limit)
+        return ''
