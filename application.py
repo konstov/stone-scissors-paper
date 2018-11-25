@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 # Импортируем модули для работы с JSON и логами.
 import json
-# import logging
+import logging
 
 # Импортируем подмодули Flask для запуска веб-сервиса.
 from flask import Flask, request
@@ -13,7 +13,7 @@ from flask import Flask, request
 from helpers import constants, helpers, dialogs
 
 app = Flask(__name__)
-# logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 
 # Хранилище данных о сессиях.
 sessionStorage = {}
@@ -82,7 +82,7 @@ def handle_dialog(req, res):
 @app.route("/", methods=['POST'])
 def main():
     # Функция получает тело запроса и возвращает ответ.
-    # logging.info('Request: %r', request.json)
+    logging.info('Request: %r', request.json)
 
     response = {
         "version": request.json['version'],
@@ -94,7 +94,7 @@ def main():
 
     handle_dialog(request.json, response)
 
-    # logging.info('Response: %r', response)
+    logging.info('Response: %r', response)
 
     return json.dumps(
         response,
