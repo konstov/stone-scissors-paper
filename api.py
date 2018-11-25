@@ -40,11 +40,14 @@ def handle_dialog(req, res):
         return
 
     # Обрабатываем ответ пользователя.
-    if req['request']['command'].lower() in constants.VALID_ANSWERS:
+    user_answer = req['request']['command'].lower()
+
+    # сыграть раунд
+    if user_answer in constants.VALID_GAME_ANSWERS:
         # Если пользователь прислал один из вариантов, то играем с ним
         text_answer, sound_answer, round_result = helpers.gameStatus(req['request']['command'].lower())
 
-        # Добавлю сообщение о хорошем потоке в ряд
+        # Добавлю сообщение о хорошем потоке 3 в ряд
         sessionStorage[session_id] = helpers.round_result_encoder(sessionStorage[session_id], round_result)
         remarkable_message = helpers.remarkable_metrics(sessionStorage[session_id], 3)
 
@@ -56,6 +59,18 @@ def handle_dialog(req, res):
             res['response']['tts'] = sound_answer
 
         res['response']['buttons'] = helpers.getSuggests(isBaseGame=True)
+        return
+
+    # если в запросе пользователя есть упоминание статистики, то верну статистику сессии
+    elif 'статистик' in user_answer:
+        res['response']['text'], res['response']['tts'] = helpers.statistics(sessionStorage[session_id])
+        return
+
+    elif 'помощь' in user_answer or \
+            'помоги' in user_answer or \
+            'возможност' in user_answer or \
+            'правил' in user_answer:
+        res['response']['text'], res['response']['tts'] = helpers.help()
         return
 
     # Если нет, то снова предлагаем сыграть
