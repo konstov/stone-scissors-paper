@@ -35,19 +35,8 @@ def handle_dialog(req, res):
         # Это новый пользователь.
         # Инициализируем сессию и поприветствуем его.
 
-        res['response']['text'] = 'Привет! Сыграем в камень-ножницы-бумага! Выбирайте, камень, ножницы или бумага?'
-        res['response']['tts'] = 'Привет! - - - Сыграем в камень ножницы бумага! Выбирайте, камень, ножницы или бумага?'
-        res['response']['buttons'] = helpers.getSuggests(isBaseGame=True)
-
-        sessionStorage[session_id] = {
-            'wins': 0,
-            'ties': 0,
-            'looses': 0,
-            'wins_in_row': 0,
-            'ties_in_row': 0,
-            'looses_in_row': 0
-        }
-
+        res['response']['text'], res['response']['tts'], res['response']['buttons'], sessionStorage[session_id] =\
+            helpers.new_session()
         return
 
     # Обрабатываем ответ пользователя.
@@ -123,4 +112,3 @@ if __name__ == '__main__':
         'ties_in_row': 0,
         'looses_in_row': 0
     }, 'loose'))
-#    main()

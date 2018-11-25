@@ -7,6 +7,17 @@ def answer(weights=[1, 1, 1]):
     answers = ['✊', '✌', '✋']
     return choices(answers, weights=weights)[0]
 
+
+# новая сессия
+def new_session():
+    text = 'Привет! Сыграем в камень-ножницы-бумага! Выбирайте, камень, ножницы или бумага?'
+    tts = 'Привет! - - - Сыграем в камень ножницы бумага! Выбирайте, камень, ножницы или бумага?'
+    buttons = getSuggests(isBaseGame=True)
+    blank_stats = constants.BLANK_STATS
+
+    return text, tts, buttons, blank_stats
+
+
 # возвращает начальную форму и правильное произношение
 def botChoiceTextMapper(bot_choice):
     if bot_choice == '✊':
@@ -43,11 +54,8 @@ def gameStatus(user_choice, is_first=False):
                                                     roundResult=round_result)
 
     # проигрыш
-    elif (bot_choice == '✊' and user_choice in ['ножницы', '✌']) or \
-            (bot_choice == '✌' and user_choice in ['бумага', '✋']) or \
-            (bot_choice == '✋' and user_choice in ['камень', '✊']):
+    elif user_choice in constants.WIN_AND_LOOSE[bot_choice_text]:
         round_result = 'loose'
-
         text_answer, sound_answer = prepare_answers(bot_choice=bot_choice,
                                                     bot_choice_text_for_speech=bot_choice_text_for_speech,
                                                     isLooser=True,
@@ -157,6 +165,8 @@ def round_result_encoder(session_state, round_result):
         return session_state
 
 
+# Функция для проверки рядов событий, можно указать длину ряда повторяющихся событий и получить сообщение,
+# если выполняется.
 def remarkable_metrics(session_state, limit):
     if limit < 5:
         if session_state['wins_in_row'] == limit:
