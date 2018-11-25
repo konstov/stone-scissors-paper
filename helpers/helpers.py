@@ -1,26 +1,11 @@
 from random import choices
 
-from . import constants
+from . import constants, dialogs
 
 # верну случайный элемент
 def answer(weights=[1, 1, 1]):
     answers = ['✊', '✌', '✋']
     return choices(answers, weights=weights)[0]
-
-
-# новая сессия
-def new_session():
-    text = """
-        Привет! Сыграем в камень-ножницы-бумага! Выбирайте, камень, ножницы или бумага? 
-        Скажитe "помоги", чтобы узнать все возможности игры."""
-    tts = """
-        Привет! - - - Сыграем в камень ножницы бумага! Выбирайте, камень, ножницы или бумага? - - 
-        Скажитe " - помоги - " , чтобы узнать все возможности игры.
-    """
-    buttons = getSuggests(isBaseGame=True)
-    blank_stats = constants.BLANK_STATS
-
-    return text, tts, buttons, blank_stats
 
 
 # возвращает начальную форму и правильное произношение
@@ -53,7 +38,7 @@ def gameStatus(user_choice, is_first=False):
     # ничья
     if user_choice in [bot_choice, bot_choice_text]:
         round_result = 'tie'
-        text_answer, sound_answer = prepare_answers(bot_choice=bot_choice,
+        text_answer, sound_answer = dialogs.prepare_answers(bot_choice=bot_choice,
                                                     bot_choice_text_for_speech=bot_choice_text_for_speech,
                                                     isLooser=False,
                                                     roundResult=round_result)
@@ -61,7 +46,7 @@ def gameStatus(user_choice, is_first=False):
     # проигрыш
     elif user_choice in constants.WIN_AND_LOOSE[bot_choice_text]:
         round_result = 'loose'
-        text_answer, sound_answer = prepare_answers(bot_choice=bot_choice,
+        text_answer, sound_answer = dialogs.prepare_answers(bot_choice=bot_choice,
                                                     bot_choice_text_for_speech=bot_choice_text_for_speech,
                                                     isLooser=True,
                                                     roundResult=round_result)
@@ -69,7 +54,7 @@ def gameStatus(user_choice, is_first=False):
     # победа
     else:
         round_result = 'win'
-        text_answer, sound_answer = prepare_answers(bot_choice=bot_choice,
+        text_answer, sound_answer = dialogs.prepare_answers(bot_choice=bot_choice,
                                                     bot_choice_text_for_speech=bot_choice_text_for_speech,
                                                     isLooser=False,
                                                     roundResult=round_result)
@@ -124,29 +109,6 @@ def create_answer_parameters(isLoose, roundResult):
                 ]
 
 
-def prepare_answers(bot_choice, bot_choice_text_for_speech, isLooser, roundResult):
-    # text_answer, sound_answer
-    invitation, prefix, main_phrase, game_select, emoticon, sound \
-        = create_answer_parameters(isLoose=isLooser, roundResult=roundResult)
-
-    return ['{}{}{}{}{}. {}'.format(prefix,
-                                    main_phrase,
-                                    emoticon,
-                                    game_select,
-                                    bot_choice,
-                                    invitation
-                                    ),
-
-            '{} - - - {}{} - - - {}{}. {}'.format(sound,
-                                                  prefix,
-                                                  main_phrase,
-                                                  game_select,
-                                                  bot_choice_text_for_speech,
-                                                  invitation
-                                                  )
-            ]
-
-
 def round_result_encoder(session_state, round_result):
     if round_result == 'win':
         session_state['wins'] += 1
@@ -168,51 +130,3 @@ def round_result_encoder(session_state, round_result):
         session_state['ties_in_row'] = 0
         session_state['wins_in_row'] = 0
         return session_state
-
-
-# Функция для проверки рядов событий, можно указать длину ряда повторяющихся событий и получить сообщение,
-# если выполняется.
-def remarkable_metrics(session_state, limit):
-    if limit < 5:
-        if session_state['wins_in_row'] == limit:
-            return ' Кстати, уже {} победы к ряду! Это тянет на рекорд!'.format(limit)
-        elif session_state['ties_in_row'] == limit:
-            return ' Кстати, уже {} ничьи подряд. Надо начинать побеждать!'.format(limit)
-        elif session_state['looses_in_row'] == limit:
-            return ' Уже {} поражения подряд! Пора переломить ход игры!'.format(limit)
-        return ''
-
-    else:
-        if session_state['wins_in_row'] == limit:
-            return ' Кстати, уже {} побед к ряду! Это тянет на рекорд!'.format(limit)
-        elif session_state['ties_in_row'] == limit:
-            return ' Кстати, уже {} ничьих подряд. Надо побеждать!'.format(limit)
-        elif session_state['looses_in_row'] == limit:
-            return ' Кстати, уже {} поражений подряд! Пора переломить ход игры!'.format(limit)
-        return ''
-
-
-# статистика
-def statistics(session_state):
-    return ['Побед: {}, ничьих: {}, поражений: {}'.format(session_state['wins'],
-                                                         session_state['ties'],
-                                                         session_state['looses']),
-            'Побед: - {} - - - , ничьих: - {} - - -, поражений: - {} - - -'.format(session_state['wins'],
-                                                          session_state['ties'],
-                                                          session_state['looses']),
-            ]
-
-def help():
-    text = """
-        Чтобы играть, скажите или введите с клавиатуры "камень", "ножницы" или "бумага". 
-        Или отправьте один из этих эмотиконов: '✊', '✌', '✋'.
-        В ответ игра пришлёт результат раунда.
-        Чтобы получить статистику текущей сессии, упомяните в запросе слово "статистика".
-    """
-    tts = """
-        Чтобы играть, скажите или введите с клавиатуры - - камень - -, - - ножницы - - или - - бумага - -. 
-        Или пришлите один из этих эмотиконов: - камень - , - ножницы -, - бумага -.
-        В ответ игра пришлёт результат раунда.
-        Чтобы получить статистику текущей сессии, упомяните в запросе слово - - статистика - -.
-    """
-    return [text, tts]

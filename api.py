@@ -11,7 +11,7 @@ import logging
 from flask import Flask, request
 
 # вспомотельные модули
-from helpers import constants, helpers
+from helpers import constants, helpers, dialogs
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -36,7 +36,7 @@ def handle_dialog(req, res):
         # Инициализируем сессию и поприветствуем его.
 
         res['response']['text'], res['response']['tts'], res['response']['buttons'], sessionStorage[session_id] =\
-            helpers.new_session()
+            dialogs.new_session()
         return
 
     # Обрабатываем ответ пользователя.
@@ -49,7 +49,7 @@ def handle_dialog(req, res):
 
         # Добавлю сообщение о хорошем потоке 3 в ряд
         sessionStorage[session_id] = helpers.round_result_encoder(sessionStorage[session_id], round_result)
-        remarkable_message = helpers.remarkable_metrics(sessionStorage[session_id], 3)
+        remarkable_message = dialogs.remarkable_metrics(sessionStorage[session_id], 3)
 
         if remarkable_message:
             res['response']['text'] = text_answer + remarkable_message
@@ -63,24 +63,24 @@ def handle_dialog(req, res):
 
     # если в запросе пользователя есть упоминание статистики, то верну статистику сессии
     elif 'статистик' in user_answer:
-        res['response']['text'], res['response']['tts'] = helpers.statistics(sessionStorage[session_id])
+
+        res['response']['text'], res['response']['tts'], res['response']['buttons'] \
+            = dialogs.statistics(sessionStorage[session_id])
         return
 
+    # ответ на запрос о помощи
     elif 'помощь' in user_answer or \
             'помоги' in user_answer or \
             'возможност' in user_answer or \
             'правил' in user_answer:
-        res['response']['text'], res['response']['tts'] = helpers.help()
+
+        res['response']['text'], res['response']['tts'], res['response']['buttons'] \
+            = dialogs.help()
         return
 
     # Если нет, то снова предлагаем сыграть
-    random_answer = helpers.answer()
-    res['response']['text'] = 'Что-то не то... Вы уверены, что хотели сказать "{0}"? Может быть вы имели ввиду "{1}"?'.\
-        format(req['request']['command'], random_answer)
-    res['response'][
-        'tts'] = 'Что-то не то. - - - Вы уверены, что хотели сказать "{0}"? Может быть вы имели ввиду "{1}"?'. \
-        format(req['request']['command'], random_answer)
-    res['response']['buttons'] = helpers.getSuggests(isBaseGame=True)
+    res['response']['text'], res['response']['tts'], res['response']['buttons'] =\
+        dialogs.error_message(req['request']['command'])
 
 
 # Задаем параметры приложения Flask.
@@ -108,6 +108,7 @@ def main():
     )
 
 
+# немного потестим
 if __name__ == '__main__':
     print(helpers.remarkable_metrics({
         'wins': 0,
@@ -127,3 +128,14 @@ if __name__ == '__main__':
         'ties_in_row': 0,
         'looses_in_row': 0
     }, 'loose'))
+
+    print(dialogs.statistics({
+        'wins': 0,
+        'ties': 2,
+        'looses': 0,
+        'wins_in_row': 3,
+        'ties_in_row': 0,
+        'looses_in_row': 0
+    }))
+
+    print(dialogs.help())
