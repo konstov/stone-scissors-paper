@@ -1,7 +1,6 @@
 # coding: utf-8
 # Импортирует поддержку UTF-8.
 from __future__ import unicode_literals
-from random import choices
 
 # Импортируем модули для работы с JSON и логами.
 import json
@@ -10,7 +9,7 @@ import logging
 # Импортируем подмодули Flask для запуска веб-сервиса.
 from flask import Flask, request
 
-# вспомотельные модули
+# мои вспомотельные модули
 from helpers import constants, helpers, dialogs
 
 app = Flask(__name__)
@@ -19,9 +18,6 @@ logging.basicConfig(level=logging.DEBUG)
 # Хранилище данных о сессиях.
 sessionStorage = {}
 
-# Хранилище данных о пользователях
-# пока не прикрутил хранилище, буду работать только с текущими сессиями
-# user = {}
 
 # Функция для непосредственной обработки диалога.
 def handle_dialog(req, res):
@@ -30,12 +26,11 @@ def handle_dialog(req, res):
     # соберу данные о сессии
     session_id = req['session']['session_id']
 
-
     if req['session']['new']:
         # Это новый пользователь.
         # Инициализируем сессию и поприветствуем его.
 
-        res['response']['text'], res['response']['tts'], res['response']['buttons'], sessionStorage[session_id] =\
+        res['response']['text'], res['response']['tts'], res['response']['buttons'], sessionStorage[session_id] = \
             dialogs.new_session()
         return
 
@@ -45,7 +40,7 @@ def handle_dialog(req, res):
     # сыграть раунд
     if user_answer in constants.VALID_GAME_ANSWERS:
         # Если пользователь прислал один из вариантов, то играем с ним
-        text_answer, sound_answer, round_result = helpers.gameStatus(req['request']['command'].lower())
+        text_answer, sound_answer, round_result = helpers.game_status(req['request']['command'].lower())
 
         # Добавлю сообщение о хорошем потоке 3 в ряд
         sessionStorage[session_id] = helpers.round_result_encoder(sessionStorage[session_id], round_result)
@@ -58,7 +53,7 @@ def handle_dialog(req, res):
             res['response']['text'] = text_answer
             res['response']['tts'] = sound_answer
 
-        res['response']['buttons'] = helpers.getSuggests(isBaseGame=True)
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=True)
         return
 
     # если в запросе пользователя есть упоминание статистики, то верну статистику сессии
@@ -75,11 +70,11 @@ def handle_dialog(req, res):
             'правил' in user_answer:
 
         res['response']['text'], res['response']['tts'], res['response']['buttons'] \
-            = dialogs.help()
+            = dialogs.help_answer()
         return
 
     # Если нет, то снова предлагаем сыграть
-    res['response']['text'], res['response']['tts'], res['response']['buttons'] =\
+    res['response']['text'], res['response']['tts'], res['response']['buttons'] = \
         dialogs.error_message(req['request']['command'])
 
 
@@ -110,7 +105,7 @@ def main():
 
 # немного потестим
 if __name__ == '__main__':
-    print(helpers.remarkable_metrics({
+    print(dialogs.remarkable_metrics({
         'wins': 0,
         'ties': 0,
         'looses': 0,
@@ -118,7 +113,7 @@ if __name__ == '__main__':
         'ties_in_row': 0,
         'looses_in_row': 0
     },
-    3))
+        3))
 
     print(helpers.round_result_encoder({
         'wins': 0,
@@ -138,4 +133,4 @@ if __name__ == '__main__':
         'looses_in_row': 0
     }))
 
-    print(dialogs.help())
+    print(dialogs.help_answer())

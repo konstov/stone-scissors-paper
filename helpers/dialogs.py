@@ -10,17 +10,17 @@ def new_session():
         Привет! - - - Сыграем в камень ножницы бумага! Выбирайте, камень, ножницы или бумага? - - 
         Скажитe - - помоги - - , чтобы узнать все возможности игры.
     """
-    buttons = helpers.getSuggests(isBaseGame=True)
+    buttons = helpers.get_suggests(is_base_game=True)
     blank_stats = constants.BLANK_STATS
 
     return text, tts, buttons, blank_stats
 
 
 # подготовка ответов
-def prepare_answers(bot_choice, bot_choice_text_for_speech, isLooser, roundResult):
+def prepare_answers(bot_choice, bot_choice_text_for_speech, is_looser, round_result):
     # text_answer, sound_answer
     invitation, prefix, main_phrase, game_select, emoticon, sound \
-        = helpers.create_answer_parameters(isLoose=isLooser, roundResult=roundResult)
+        = helpers.create_answer_parameters(is_loose=is_looser, round_result=round_result)
 
     return ['{}{}{}{}{}. {}'.format(prefix,
                                     main_phrase,
@@ -72,11 +72,11 @@ def statistics(session_state):
                                                                                  session_state['ties'],
                                                                                  session_state['looses'])
 
-    return text, tts, helpers.getSuggests(isBaseGame=True)
+    return text, tts, helpers.get_suggests(is_base_game=True)
 
 
 # помощь
-def help():
+def help_answer():
     text = """
         Чтобы играть, скажите или введите с клавиатуры "камень", "ножницы" или "бумага". 
         Или отправьте один из этих эмотиконов: '✊', '✌', '✋'.
@@ -90,11 +90,11 @@ def help():
         Чтобы получить статистику текущей сессии, упомяните в запросе слово - - статистика - -.\
     '
 
-    return text, tts, helpers.getSuggests(isBaseGame=True)
+    return text, tts, helpers.get_suggests(is_base_game=True)
 
 
 def error_message(request_command):
-    random_answer, random_answer_tts = helpers.botChoiceTextMapper(helpers.answer())
+    random_answer, random_answer_tts = helpers.bot_choice_text_mapper(helpers.answer())
 
     text = 'Что-то не то... Вы уверены, что хотели сказать "{0}"? Может быть вы имели ввиду "{1}"?'.\
         format(request_command, random_answer)
@@ -102,4 +102,4 @@ def error_message(request_command):
     tts = 'Что-то не то. - - - Вы уверены, что хотели сказать "{0}"? Может быть вы имели ввиду "{1}"?'. \
         format(request_command, random_answer_tts)
 
-    return text, tts, helpers.getSuggests(isBaseGame=True)
+    return text, tts, helpers.get_suggests(is_base_game=True)
