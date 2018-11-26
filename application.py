@@ -13,7 +13,7 @@ from flask import Flask, request
 from helpers import constants, helpers, dialogs
 
 app = Flask(__name__)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.CRITICAL)
 
 # Хранилище данных о сессиях.
 sessionStorage = {}
@@ -24,7 +24,7 @@ def handle_dialog(req, res):
     # user_id = req['session']['user_id'] пока насквозь пользователья хранить не буду
 
     # соберу данные о сессии
-    session_id = req['session']['session_id'] + req['session']['user_id']
+    session_id = req['session']['session_id'] + '_' + req['session']['user_id']
 
     if req['session']['new']:
         # Это новый пользователь.
@@ -36,6 +36,7 @@ def handle_dialog(req, res):
 
     # Обрабатываем ответ пользователя.
     user_answer = req['request']['command'].lower()
+    session_stat = sessionStorage[session_id].copy()
 
     # сыграть раунд
     if user_answer in constants.VALID_GAME_ANSWERS:
@@ -43,8 +44,9 @@ def handle_dialog(req, res):
         text_answer, sound_answer, round_result = helpers.game_status(req['request']['command'].lower())
 
         # Добавлю сообщение о хорошем потоке 3 в ряд
-        sessionStorage[session_id] = helpers.round_result_encoder(sessionStorage[session_id], round_result)
-        remarkable_message = dialogs.remarkable_metrics(sessionStorage[session_id], 3)
+        sessionStorage[session_id] = helpers.round_result_encoder(session_stat, round_result)
+        session_stat = sessionStorage[session_id].copy()
+        remarkable_message = dialogs.remarkable_metrics(session_stat, 3)
 
         if remarkable_message:
             res['response']['text'] = text_answer + remarkable_message
@@ -60,7 +62,7 @@ def handle_dialog(req, res):
     elif 'статистик' in user_answer:
 
         res['response']['text'], res['response']['tts'], res['response']['buttons'] \
-            = dialogs.statistics(sessionStorage[session_id])
+            = dialogs.statistics(session_stat)
         return
 
     # ответ на запрос о помощи
