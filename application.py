@@ -13,7 +13,7 @@ from flask import Flask, request
 from helpers import constants, helpers, dialogs
 
 app = Flask(__name__)
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 # Хранилище данных о сессиях.
 sessionStorage = {}
@@ -24,7 +24,7 @@ def handle_dialog(req, res):
     # user_id = req['session']['user_id'] пока насквозь пользователья хранить не буду
 
     # соберу данные о сессии
-    session_id = req['session']['session_id']
+    session_id = req['session']['session_id'] + req['session']['user_id']
 
     if req['session']['new']:
         # Это новый пользователь.
