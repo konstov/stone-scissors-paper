@@ -13,7 +13,7 @@ from flask import Flask, request
 from helpers import constants, helpers, dialogs
 
 app = Flask(__name__)
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 # Хранилище данных о сессиях.
 sessionStorage = {}
