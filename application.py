@@ -24,7 +24,7 @@ def handle_dialog(req, res):
     # user_id = req['session']['user_id'] пока насквозь пользователья хранить не буду
 
     # соберу данные о сессии
-    session_id = req['session']['session_id']
+    session_id = req['session']['session_id'] + req['session']['user_id']
 
     if req['session']['new']:
         # Это новый пользователь.
