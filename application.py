@@ -70,6 +70,9 @@ def handle_dialog(req, res):
     elif 'помощь' in user_answer or \
             'помоги' in user_answer or \
             'возможност' in user_answer or \
+            'что ты умеешь' in user_answer or \
+            'ты умеешь' in user_answer or \
+            'что умеешь' in user_answer or \
             'правил' in user_answer:
 
         res['response']['text'], res['response']['tts'], res['response']['buttons'] \
@@ -78,7 +81,9 @@ def handle_dialog(req, res):
 
     # Если нет, то снова предлагаем сыграть
     res['response']['text'], res['response']['tts'], res['response']['buttons'] = \
-        dialogs.error_message(req['request']['command'])
+        dialogs.help_answer()
+        # dialogs.error_message(req['request']['command'])
+        
 
 
 # Задаем параметры приложения Flask.
