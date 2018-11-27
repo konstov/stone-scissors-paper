@@ -5,10 +5,10 @@ from . import constants, helpers
 def new_session():
     text = """
         Привет! Сыграем в камень-ножницы-бумага! Выбирайте, камень, ножницы или бумага? 
-        Скажитe "помоги", чтобы узнать все возможности игры."""
+        Скажитe "Помощь" или "Что ты умеешь?", чтобы узнать все возможности игры."""
     tts = """
-        Привет! - - - Сыграем в камень ножницы бумага! Выбирайте, камень, ножницы или бумага? - - 
-        Скажитe - - помоги - - , чтобы узнать все возможности игры.
+        Привет! - - - Сыграем в - камень - ножницы - бумага! Выбирайте, - - камень - -  ножницы - или - бумага? - - 
+        Скаж+итe, - - помощь - - или - - что - ты - умеешь - , чтобы узнать все возможности игр+ы.
     """
     buttons = helpers.get_suggests(is_base_game=True)
     blank_stats = constants.BLANK_STATS
@@ -49,7 +49,7 @@ def remarkable_metrics(session_state, limit):
         elif session_state['ties_in_row'] == limit:
             return ' Кстати, уже {} ничьи подряд. Надо начинать побеждать!'.format(limit)
         elif session_state['looses_in_row'] == limit:
-            return ' Уже {} поражения подряд! Пора переломить ход игры!'.format(limit)
+            return ' Кстати, уже {} поражения подряд! Пора переломить ход игры!'.format(limit)
         return ''
 
     else:
@@ -96,10 +96,13 @@ def help_answer():
 def error_message(request_command):
     random_answer, random_answer_tts = helpers.bot_choice_text_mapper(helpers.answer())
 
-    text = 'Что-то не то... Вы уверены, что хотели сказать "{0}"? Может быть вы имели ввиду "{1}"?'.\
-        format(request_command, random_answer)
+    text = """
+        Что-то не то... Вы уверены, что хотели сказать "{0}"? Может быть вы имели ввиду "{1}"? 
+        Для получения справка скажите "Помощь" или "Что ты умеешь?".
+        """.format(request_command, random_answer)
 
-    tts = 'Что-то не то. - - - Вы уверены, что хотели сказать "{0}"? Может быть вы имели ввиду "{1}"?'. \
+    tts = 'Что-то не то. - - - Вы уверены, что хотели сказать "{0}"? Может быть вы имели ввиду "{1}"?' \
+          'Для получения справка скажите - - помощь - - или  - - Что ты умеешь? - -'. \
         format(request_command, random_answer_tts)
 
     return text, tts, helpers.get_suggests(is_base_game=True)

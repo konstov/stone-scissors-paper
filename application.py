@@ -13,7 +13,7 @@ from flask import Flask, request
 from helpers import constants, helpers, dialogs
 
 app = Flask(__name__)
-logging.basicConfig(level=logging.CRITICAL)
+logging.basicConfig(level=logging.INFO)
 
 # Хранилище данных о сессиях.
 sessionStorage = {}
@@ -24,7 +24,10 @@ def handle_dialog(req, res):
     # user_id = req['session']['user_id'] пока насквозь пользователья хранить не буду
 
     # соберу данные о сессии
-    session_id = req['session']['session_id'] + '_' + req['session']['user_id']
+    session_id = req['session']['session_id'] + req['session']['user_id']
+
+    # Обрабатываем ответ пользователя.
+    user_answer = req['request']['command'].lower()
 
     if req['session']['new']:
         # Это новый пользователь.
@@ -34,8 +37,6 @@ def handle_dialog(req, res):
             dialogs.new_session()
         return
 
-    # Обрабатываем ответ пользователя.
-    user_answer = req['request']['command'].lower()
     session_stat = sessionStorage[session_id].copy()
 
     # сыграть раунд
@@ -69,6 +70,9 @@ def handle_dialog(req, res):
     elif 'помощь' in user_answer or \
             'помоги' in user_answer or \
             'возможност' in user_answer or \
+            'что ты умеешь' in user_answer or \
+            'ты умеешь' in user_answer or \
+            'что умеешь' in user_answer or \
             'правил' in user_answer:
 
         res['response']['text'], res['response']['tts'], res['response']['buttons'] \
@@ -77,7 +81,8 @@ def handle_dialog(req, res):
 
     # Если нет, то снова предлагаем сыграть
     res['response']['text'], res['response']['tts'], res['response']['buttons'] = \
-        dialogs.error_message(req['request']['command'])
+        dialogs.help_answer()
+    # dialogs.error_message(req['request']['command'])
 
 
 # Задаем параметры приложения Flask.
