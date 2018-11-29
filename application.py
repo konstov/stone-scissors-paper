@@ -85,7 +85,6 @@ def handle_dialog(req, res):
         # dialogs.error_message(req['request']['command'])
 
 
-
 # Задаем параметры приложения Flask.
 @app.route("/", methods=['POST'])
 def main():
