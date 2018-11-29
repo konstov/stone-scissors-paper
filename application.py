@@ -83,7 +83,7 @@ def handle_dialog(req, res):
     res['response']['text'], res['response']['tts'], res['response']['buttons'] = \
         dialogs.help_answer()
         # dialogs.error_message(req['request']['command'])
-        
+
 
 
 # Задаем параметры приложения Flask.
