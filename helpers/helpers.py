@@ -1,4 +1,5 @@
 from random import choices
+from time import time
 
 from . import constants, dialogs
 
@@ -115,6 +116,7 @@ def round_result_encoder(session_state, round_result):
         session_state['wins_in_row'] += 1
         session_state['looses_in_row'] = 0
         session_state['ties_in_row'] = 0
+        session_state['last_query_moment'] = time()
         return session_state
 
     elif round_result == 'tie':
@@ -122,6 +124,7 @@ def round_result_encoder(session_state, round_result):
         session_state['ties_in_row'] += 1
         session_state['wins_in_row'] = 0
         session_state['looses_in_row'] = 0
+        session_state['last_query_moment'] = time()
         return session_state
 
     elif round_result == 'loose':
@@ -129,4 +132,5 @@ def round_result_encoder(session_state, round_result):
         session_state['looses_in_row'] += 1
         session_state['ties_in_row'] = 0
         session_state['wins_in_row'] = 0
+        session_state['last_query_moment'] = time()
         return session_state

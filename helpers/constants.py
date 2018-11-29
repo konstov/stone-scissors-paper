@@ -48,7 +48,8 @@ BLANK_STATS = {
         'looses': 0,
         'wins_in_row': 0,
         'ties_in_row': 0,
-        'looses_in_row': 0
+        'looses_in_row': 0,
+        'last_query_moment': None
     }
 
 WIN_AND_LOOSE  ={

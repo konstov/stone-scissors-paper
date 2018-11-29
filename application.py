@@ -8,6 +8,7 @@ import logging
 
 # Импортируем подмодули Flask для запуска веб-сервиса.
 from flask import Flask, request
+from time import time
 
 # мои вспомотельные модули
 from helpers import constants, helpers, dialogs
@@ -98,6 +99,19 @@ def main():
             "end_session": False
         }
     }
+
+    # Чищу словарь от неиспользуемых сессий
+    # Убиваю сессию, неактивную более 5 минут среди первых пяти
+    # иначе, чтобы не тянуть время ответа, двигаюсь дальше
+    for index, kv in enumerate(sessionStorage.items()):
+        try:
+            if time() - kv[1]['last_query_moment'] > 300:
+                del sessionStorage[kv[0]]
+                break
+            if index > 5:
+                break
+        except:
+            pass
 
     handle_dialog(request.json, response)
 
