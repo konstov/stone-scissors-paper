@@ -66,6 +66,7 @@ def handle_dialog(sessionStorage, req, res):
         res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
         return
 
+    # осознанное переключением пользователем на сложный вариант игры
     elif 'непростая игра' in user_answer or \
         'сложная игра' in user_answer:
         # поставлю метку расширенной игры
@@ -80,6 +81,17 @@ def handle_dialog(sessionStorage, req, res):
         res['response']['buttons'] = helpers.get_suggests(is_base_game=False)
         return
 
+    # если пользовать упомянет ящерицу или Спока в простом варианте игры, то команда не будет отработана как валидная
+    # переключу в сложный режим
+    elif 'ящериц' in user_answer or \
+        'спок' in user_answer:
+        sessionStorage[session_id]['is_lizard_spock'] = True
+
+        res['response']['text'], res['response']['tts'] = dialogs.add_lizard_spock()
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=False)
+        return
+
+    # возврат к простому варианту игры
     elif 'обычная игра' in user_answer or \
             'простая игра' in user_answer:
         # поставлю метку расширенной игры
@@ -93,9 +105,6 @@ def handle_dialog(sessionStorage, req, res):
         res['response']['text'], res['response']['tts'] = dialogs.already_simple_game()
         res['response']['buttons'] = helpers.get_suggests(is_base_game=True)
         return
-
-
-
 
     # Если нет, то снова предлагаем сыграть
     res['response']['text'], res['response']['tts'] = dialogs.help_answer()
