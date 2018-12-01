@@ -14,7 +14,7 @@ from time import time
 from helpers import constants, helpers, dialogs, dialog_handler
 
 app = Flask(__name__)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 # Хранилище данных о сессиях.
 sessionStorage = {}

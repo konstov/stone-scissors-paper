@@ -4,19 +4,13 @@ from time import time
 from . import constants, dialogs
 
 # верну случайный элемент
-def answer(weights=[1, 1, 1]):
-    answers = ['✊', '✌', '✋']
-    return choices(answers, weights=weights)[0]
+def answer(answers):
+    return choices(answers)[0]
 
 
 # возвращает начальную форму и правильное произношение
 def bot_choice_text_mapper(bot_choice):
-    if bot_choice == '✊':
-        return 'камень', 'камень'
-    elif bot_choice == '✋':
-        return 'бумага', 'бумагу'
-    elif bot_choice == '✌':
-        return 'ножницы', 'ножницы'
+    return constants.TEXT_MAPPER[bot_choice]
 
 
 def new_round_invitation(is_loose):
@@ -27,17 +21,18 @@ def new_round_invitation(is_loose):
 
 
 # результат матча
-def game_status(user_choice, is_first=False):
-    # Известно, что первыми чаще всего выкидывают ножницы (до 70 % случаев)
-    if is_first:
-        bot_choice = answer(weights=[1.5, 7, 1.5])
+def game_status(user_choice, is_lizard_spock):
+    if is_lizard_spock:
+        bot_choice = answer(constants.LIZARD_SPOCK_BOT_ANSWERS)
+        win_and_loose = constants.LIZARD_SPOCK_WIN_AND_LOOSE
     else:
-        bot_choice = answer()
+        bot_choice = answer(constants.BOT_ANSWERS)
+        win_and_loose = constants.WIN_AND_LOOSE
 
     bot_choice_text, bot_choice_text_for_speech = bot_choice_text_mapper(bot_choice)
 
     # ничья
-    if user_choice in [bot_choice, bot_choice_text]:
+    if user_choice.lower() in [bot_choice.lower(), bot_choice_text.lower()]: # lower(), чтобы не было проблем со Споком
         round_result = 'tie'
         text_answer, sound_answer = dialogs.prepare_answers(bot_choice=bot_choice,
                                                             bot_choice_text_for_speech=bot_choice_text_for_speech,
@@ -45,7 +40,7 @@ def game_status(user_choice, is_first=False):
                                                             round_result=round_result)
 
     # проигрыш
-    elif user_choice in constants.WIN_AND_LOOSE[bot_choice_text]:
+    elif user_choice.lower() in win_and_loose[bot_choice_text]:
         round_result = 'loose'
         text_answer, sound_answer = dialogs.prepare_answers(bot_choice=bot_choice,
                                                             bot_choice_text_for_speech=bot_choice_text_for_speech,

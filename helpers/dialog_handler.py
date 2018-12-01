@@ -2,8 +2,6 @@ from . import dialogs, constants, helpers
 
 # Функция для непосредственной обработки диалога.
 def handle_dialog(sessionStorage, req, res):
-    # user_id = req['session']['user_id'] пока насквозь пользователья хранить не буду
-
     # соберу данные о сессии
     session_id = req['session']['session_id'] + req['session']['user_id']
 
@@ -14,16 +12,25 @@ def handle_dialog(sessionStorage, req, res):
         # Это новый пользователь.
         # Инициализируем сессию и поприветствуем его.
 
-        res['response']['text'], res['response']['tts'], res['response']['buttons'], sessionStorage[session_id] = \
+        res['response']['text'], res['response']['tts'], sessionStorage[session_id] = \
             dialogs.new_session()
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=True)
         return
 
     session_stat = sessionStorage[session_id].copy()
+    is_lizard_spock = session_stat['is_lizard_spock']
+
+    if not is_lizard_spock:
+        valid_game_answers = constants.VALID_GAME_ANSWERS
+
+    else:
+        valid_game_answers = constants.LIZARD_SPOCK_VALID_GAME_ANSWERS
 
     # сыграть раунд
-    if user_answer in constants.VALID_GAME_ANSWERS:
+    if user_answer in valid_game_answers:
         # Если пользователь прислал один из вариантов, то играем с ним
-        text_answer, sound_answer, round_result = helpers.game_status(req['request']['command'].lower())
+        text_answer, sound_answer, round_result = helpers.game_status(req['request']['command'].lower(),
+                                                                      is_lizard_spock)
 
         # Добавлю сообщение о хорошем потоке 3 в ряд
         sessionStorage[session_id] = helpers.round_result_encoder(session_stat, round_result)
@@ -37,14 +44,13 @@ def handle_dialog(sessionStorage, req, res):
             res['response']['text'] = text_answer
             res['response']['tts'] = sound_answer
 
-        res['response']['buttons'] = helpers.get_suggests(is_base_game=True)
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
         return
 
     # если в запросе пользователя есть упоминание статистики, то верну статистику сессии
     elif 'статистик' in user_answer:
-
-        res['response']['text'], res['response']['tts'], res['response']['buttons'] \
-            = dialogs.statistics(session_stat)
+        res['response']['text'], res['response']['tts'] = dialogs.statistics(session_stat)
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
         return
 
     # ответ на запрос о помощи
@@ -56,11 +62,41 @@ def handle_dialog(sessionStorage, req, res):
             'что умеешь' in user_answer or \
             'правил' in user_answer:
 
-        res['response']['text'], res['response']['tts'], res['response']['buttons'] \
-            = dialogs.help_answer()
+        res['response']['text'], res['response']['tts'] = dialogs.help_answer()
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
         return
 
+    elif 'непростая игра' in user_answer or \
+        'сложная игра' in user_answer:
+        # поставлю метку расширенной игры
+        if not is_lizard_spock:
+            sessionStorage[session_id]['is_lizard_spock'] = True
+
+            res['response']['text'], res['response']['tts'] = dialogs.add_lizard_spock()
+            res['response']['buttons'] = helpers.get_suggests(is_base_game=False)
+            return
+
+        res['response']['text'], res['response']['tts'] = dialogs.already_lizard_spock()
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=False)
+        return
+
+    elif 'обычная игра' in user_answer or \
+            'простая игра' in user_answer:
+        # поставлю метку расширенной игры
+        if is_lizard_spock:
+            sessionStorage[session_id]['is_lizard_spock'] = False
+
+            res['response']['text'], res['response']['tts'] = dialogs.remove_lizard_spock()
+            res['response']['buttons'] = helpers.get_suggests(is_base_game=True)
+            return
+
+        res['response']['text'], res['response']['tts'] = dialogs.already_simple_game()
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=True)
+        return
+
+
+
+
     # Если нет, то снова предлагаем сыграть
-    res['response']['text'], res['response']['tts'], res['response']['buttons'] = \
-        dialogs.help_answer()
-        # dialogs.error_message(req['request']['command'])
+    res['response']['text'], res['response']['tts'] = dialogs.help_answer()
+    res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
