@@ -41,8 +41,8 @@ def handle_dialog(sessionStorage, req, res):
             res['response']['text'] = text_answer + remarkable_message
             res['response']['tts'] = sound_answer + remarkable_message
         else:
-            res['response']['text'] = text_answer
-            res['response']['tts'] = sound_answer
+            res['response']['text'] = text_answer + str(is_lizard_spock)
+            res['response']['tts'] = sound_answer + str(is_lizard_spock)
 
         res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
         return

@@ -11,7 +11,7 @@ def new_session():
         Скаж+ите, - - помощь - - или - - что - ты - умеешь - , чтобы узнать все возможности игр+ы.
         - - там есть кое-что интересное.
     """
-    blank_stats = constants.BLANK_STATS
+    blank_stats = constants.BLANK_STATS.copy()
 
     return text, tts, blank_stats
 
