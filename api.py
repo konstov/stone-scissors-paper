@@ -38,7 +38,7 @@ def main():
     # иначе, чтобы не тянуть время ответа, двигаюсь дальше
     for index, kv in enumerate(sessionStorage.items()):
         try:
-            if time() - kv[1]['last_query_moment'] > 300:
+            if time() - kv[1]['last_query_moment'] > 900:
                 del sessionStorage[kv[0]]
                 break
             if index > 5:
