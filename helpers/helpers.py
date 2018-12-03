@@ -129,3 +129,10 @@ def round_result_encoder(session_state, round_result):
         session_state['wins_in_row'] = 0
         session_state['last_query_moment'] = time()
         return session_state
+
+
+def get_stars():
+    return [{'title': 'Оцените, если понравилось!',
+            'hide': False,
+            'url': 'https://dialogs.yandex.ru/store/skills/09946070-kamen-nozhnicy-bumag'
+            }]

@@ -63,7 +63,8 @@ def handle_dialog(sessionStorage, req, res):
             'правил' in user_answer:
 
         res['response']['text'], res['response']['tts'] = dialogs.help_answer()
-        res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
+        res['response']['buttons'] = helpers.get_stars() + helpers.get_suggests(is_base_game=not is_lizard_spock)
+
         return
 
     # осознанное переключением пользователем на сложный вариант игры
@@ -108,4 +109,4 @@ def handle_dialog(sessionStorage, req, res):
 
     # Если нет, то снова предлагаем сыграть
     res['response']['text'], res['response']['tts'] = dialogs.help_answer()
-    res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
+    res['response']['buttons'] = helpers.get_stars() + helpers.get_suggests(is_base_game=not is_lizard_spock)
