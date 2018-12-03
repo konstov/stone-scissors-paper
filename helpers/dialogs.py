@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from . import constants, helpers
 
 
@@ -11,7 +13,7 @@ def new_session():
         Скаж+ите, - - помощь - - или - - что - ты - умеешь - , чтобы узнать все возможности игр+ы.
         - - там есть кое-что интересное.
     """
-    blank_stats = constants.BLANK_STATS.copy()
+    blank_stats = deepcopy(constants.BLANK_STATS)
 
     return text, tts, blank_stats
 
@@ -93,6 +95,8 @@ def help_answer():
         Чтобы вернуться в вариант без ящерицы и Спока, скажите "простая игра".
         
         Чтобы узнать статистику текущей сессии, задайте вопрос, содержащий слово "статистика".
+        
+        Скажите "хватит", чтобы закончить игру.
     """
     tts = '\
         Чтобы играть, скажите или введите с клавиатуры - - камень - -, - - ножницы - - или - - бумага - -. \
@@ -107,7 +111,8 @@ def help_answer():
         Ящерица поедает бумагу и отравляет Спока - - . \
         Спок разбивает ножницы и испаряет камень - - .\
         Чтобы вернуться в вариант без ящерицы и Спока, - - скаж+ите  - - простая - игра - - . \
-        Чтобы узнать статистику текущей сессии, - задайте вопрос, содержащий слово - - - статистика.\
+        Чтобы узнать статистику текущей сессии, - задайте вопрос, содержащий слово - - - статистика - \
+        Скажите - хв+атит - , чтобы закончить игр+у. \
     '
 
     return text, tts
@@ -157,5 +162,68 @@ def already_simple_game():
 
     tts = 'Да, - - как скажете,  - - продолжим играть в простой вариант игры без ящерицы и Спока - \
           Чтобы сыграть с ними, скажите  - - сложная игра'
+
+    return text, tts
+
+
+def start_limit_game(limit):
+    text = """
+    Играем до {} побед!
+    """.format(limit)
+
+    tts = 'Играем до - {} - побед!'.format(limit)
+
+    return text, tts
+
+
+def stats_of_limit(stats):
+    if stats['wins'] > stats['looses']:
+        text = """
+            Счёт {}:{}, вы ведёте в матче!
+            """.format(stats['wins'], stats['looses'])
+
+        tts = 'Счёт - {} - - {} , вы ведёте в матче!'.format(stats['wins'], stats['looses'])
+
+    elif stats['wins'] == stats['looses']:
+        text = """
+                    Пока ничья в матче. Счёт {}:{}.
+                    """.format(stats['wins'], stats['looses'])
+
+        tts = 'Пока ничья в матче. - Счёт - {} - - {}'.format(stats['wins'], stats['looses'])
+
+    else:
+        text = """
+                    Вы прогрываете матч со счётом {}:{}.
+                    """.format(stats['wins'], stats['looses'])
+
+        tts = 'Вы прогрываете матч со счётом - {} - - {}'.format(stats['wins'], stats['looses'])
+
+    return text, tts
+
+
+def stats_of_limit_gameover(stats):
+    if stats['wins'] > stats['looses']:
+        text = """
+            Матч закончился со счётом {}:{} в вашу пользу!
+            """.format(stats['wins'], stats['looses'])
+
+        tts = 'Матч закончился со счётом - {} - - {} - в вашу пользу!'.format(stats['wins'], stats['looses'])
+
+    else:
+        text = """
+                    Поражение в матче со счётом {}:{}.
+                    """.format(stats['wins'], stats['looses'])
+
+        tts = 'Поражение в матче со счётом - {} - - {}'.format(stats['wins'], stats['looses'])
+
+    return text, tts
+
+
+def new_limit_game_invitation():
+    text = """
+    Скажите "да", чтобы повторить матч сначала, или "нет", чтобы вернятся к обычной игре.
+    """
+
+    tts = 'Скажите - да - , чтобы повторить матч сначала, или  - нет - , чтобы вернятся к обычной игре.'
 
     return text, tts

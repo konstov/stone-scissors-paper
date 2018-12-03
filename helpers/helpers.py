@@ -72,6 +72,13 @@ def get_suggests(is_base_game=True):
     ]
 
 
+def get_suggests_new_limit_game_invitation():
+    return [
+        {'title': 'Да!', 'hide': True},
+        {'title': 'Нет!', 'hide': True}
+    ]
+
+
 # сформирую составляющие итогового ответа пользователю
 def create_answer_parameters(is_loose, round_result):
     if round_result == 'win':
@@ -112,6 +119,8 @@ def round_result_encoder(session_state, round_result):
         session_state['looses_in_row'] = 0
         session_state['ties_in_row'] = 0
         session_state['last_query_moment'] = time()
+        if session_state['limit_of_game']:
+            session_state['limit_game_score']['wins'] += 1
         return session_state
 
     elif round_result == 'tie':
@@ -128,11 +137,18 @@ def round_result_encoder(session_state, round_result):
         session_state['ties_in_row'] = 0
         session_state['wins_in_row'] = 0
         session_state['last_query_moment'] = time()
+        if session_state['limit_of_game']:
+            session_state['limit_game_score']['looses'] += 1
         return session_state
 
 
 def get_stars():
-    return [{'title': 'Оцените, если понравилось!',
+    return [{'title': 'Оцените, если понравилось 😉',
             'hide': False,
             'url': 'https://dialogs.yandex.ru/store/skills/09946070-kamen-nozhnicy-bumag'
             }]
+
+
+def limit_game(session_state):
+
+    return session_state
