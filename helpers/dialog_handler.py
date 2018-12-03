@@ -150,19 +150,26 @@ def handle_dialog(sessionStorage, req, res):
 
     # спрошу, хочет ли пользователь сыграть ещё раз лимитную игру
     # если да, то сохраню лимит и сброшу счёт
-    elif user_answer in ['да', 'да!', 'Да'] and sessionStorage[session_id]['limit_game_is_ended'] == True:
+    elif user_answer in ['да', 'да!', 'Да', 'Да!'] and sessionStorage[session_id]['limit_game_is_ended'] == True:
         # сброшу состояние матча
         sessionStorage[session_id]['limit_game_score'] = {'wins': 0, 'looses': 0}
         sessionStorage[session_id]['limit_game_is_ended'] = False
 
+        res['response']['text'], res['response']['tts'] = \
+            dialogs.start_limit_game(sessionStorage[session_id]['limit_of_game'])
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
+        return
 
     # если нет, то вернусь к стандартной игре
-    elif user_answer in ['нет', 'нет!', 'Нет!'] and sessionStorage[session_id]['limit_game_is_ended'] == True:
+    elif user_answer in ['нет', 'нет!', 'Нет!', 'Нет'] and sessionStorage[session_id]['limit_game_is_ended'] == True:
         # сброшу состояние матча
         sessionStorage[session_id]['limit_game_score'] = {'wins': 0, 'looses': 0}
         sessionStorage[session_id]['limit_game_is_ended'] = False
         sessionStorage[session_id]['limit_of_game'] = None
 
+        res['response']['text'], res['response']['tts'] = dialogs.back_from_limit_to_stand_game()
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
+        return
 
     # Если нет, то снова предлагаем сыграть
     res['response']['text'], res['response']['tts'] = dialogs.help_answer()
