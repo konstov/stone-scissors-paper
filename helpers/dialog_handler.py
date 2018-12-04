@@ -177,7 +177,7 @@ def handle_dialog(sessionStorage, req, res):
     elif ('играть до' in user_answer or 'до ' in user_answer) \
             and 'побед' in user_answer \
             and len([
-                    en['value'] for en in req['request']['nlu']['entities'][0]['type']
+                    en['value'] for en in req['request']['nlu']['entities']
                     if en['type'] == 'YANDEX.NUMBER'
                     ]) > 1:
 
@@ -186,12 +186,11 @@ def handle_dialog(sessionStorage, req, res):
         res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
         return
 
-
     # проверка, если не распозналось чисел совсем
     elif ('играть до' in user_answer or 'до ' in user_answer) \
             and 'побед' in user_answer \
             and len([
-                    en['value'] for en in req['request']['nlu']['entities'][0]['type']
+                    en['value'] for en in req['request']['nlu']['entities']
                     if en['type'] == 'YANDEX.NUMBER'
                     ]) == 0:
 
