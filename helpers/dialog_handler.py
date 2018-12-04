@@ -173,6 +173,33 @@ def handle_dialog(sessionStorage, req, res):
         res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
         return
 
+    # проверка, если распозналось более одного числа, попрошу повторить команду
+    elif ('играть до' in user_answer or 'до ' in user_answer) \
+            and 'побед' in user_answer \
+            and len([
+                    en['value'] for en in req['request']['nlu']['entities'][0]['type']
+                    if en['type'] == 'YANDEX.NUMBER'
+                    ]) > 1:
+
+        res['response']['text'], res['response']['tts'] = \
+            dialogs.to_match_numbers_in_limit_game()
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
+        return
+
+
+    # проверка, если не распозналось чисел совсем
+    elif ('играть до' in user_answer or 'до ' in user_answer) \
+            and 'побед' in user_answer \
+            and len([
+                    en['value'] for en in req['request']['nlu']['entities'][0]['type']
+                    if en['type'] == 'YANDEX.NUMBER'
+                    ]) == 0:
+
+        res['response']['text'], res['response']['tts'] = \
+            dialogs.no_numbers_in_limit_game()
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
+        return
+
     # Если нет, то снова предлагаем сыграть
     res['response']['text'], res['response']['tts'] = dialogs.help_answer()
     res['response']['buttons'] = helpers.get_stars() + helpers.get_suggests(is_base_game=not is_lizard_spock)
