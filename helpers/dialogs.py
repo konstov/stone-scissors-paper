@@ -214,10 +214,10 @@ def stats_of_limit(stats):
 
     else:
         text = """
-                    Вы прогрываете матч со счётом {}:{}.
+                    Вы проигрываете матч со счётом {}:{}.
                     """.format(stats['wins'], stats['looses'])
 
-        tts = 'Вы прогрываете матч со счётом - {} - - {}. '.format(stats['wins'], stats['looses'])
+        tts = 'Вы проигрываете матч со счётом - {} - - {}. '.format(stats['wins'], stats['looses'])
 
     return text, tts
 
