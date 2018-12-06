@@ -34,11 +34,11 @@ def main():
     }
 
     # Чищу словарь от неиспользуемых сессий
-    # Убиваю сессию, неактивную более 5 минут среди первых пяти
+    # Убиваю сессию, неактивную более месяца
     # иначе, чтобы не тянуть время ответа, двигаюсь дальше
     for index, kv in enumerate(sessionStorage.items()):
         try:
-            if time() - kv[1]['last_query_moment'] > 900:
+            if time() - kv[1]['last_query_moment'] > 2592000:
                 del sessionStorage[kv[0]]
                 break
             if index > 5:

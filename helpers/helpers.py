@@ -21,7 +21,7 @@ def new_round_invitation(is_loose):
 
 
 # результат матча
-def game_status(user_choice, is_lizard_spock):
+def game_status(user_choice, is_lizard_spock, is_limit):
     if is_lizard_spock:
         bot_choice = answer(constants.LIZARD_SPOCK_BOT_ANSWERS)
         win_and_loose = constants.LIZARD_SPOCK_WIN_AND_LOOSE
@@ -37,7 +37,8 @@ def game_status(user_choice, is_lizard_spock):
         text_answer, sound_answer = dialogs.prepare_answers(bot_choice=bot_choice,
                                                             bot_choice_text_for_speech=bot_choice_text_for_speech,
                                                             is_looser=False,
-                                                            round_result=round_result)
+                                                            round_result=round_result,
+                                                            is_limit=is_limit)
 
     # проигрыш
     elif user_choice.lower() in win_and_loose[bot_choice_text]:
@@ -45,7 +46,8 @@ def game_status(user_choice, is_lizard_spock):
         text_answer, sound_answer = dialogs.prepare_answers(bot_choice=bot_choice,
                                                             bot_choice_text_for_speech=bot_choice_text_for_speech,
                                                             is_looser=True,
-                                                            round_result=round_result)
+                                                            round_result=round_result,
+                                                            is_limit=is_limit)
 
     # победа
     else:
@@ -53,7 +55,8 @@ def game_status(user_choice, is_lizard_spock):
         text_answer, sound_answer = dialogs.prepare_answers(bot_choice=bot_choice,
                                                             bot_choice_text_for_speech=bot_choice_text_for_speech,
                                                             is_looser=False,
-                                                            round_result=round_result)
+                                                            round_result=round_result,
+                                                            is_limit=is_limit)
 
     return text_answer, sound_answer, round_result
 
@@ -69,6 +72,13 @@ def get_suggests(is_base_game=True):
     return [
         {'title': suggest, 'hide': True}
         for suggest in constants.LIZARD_SPOCK_SUGGESTS
+    ]
+
+
+def get_suggests_new_limit_game_invitation():
+    return [
+        {'title': 'Да!', 'hide': True},
+        {'title': 'Нет!', 'hide': True}
     ]
 
 
@@ -112,6 +122,8 @@ def round_result_encoder(session_state, round_result):
         session_state['looses_in_row'] = 0
         session_state['ties_in_row'] = 0
         session_state['last_query_moment'] = time()
+        if session_state['limit_of_game']:
+            session_state['limit_game_score']['wins'] += 1
         return session_state
 
     elif round_result == 'tie':
@@ -128,4 +140,18 @@ def round_result_encoder(session_state, round_result):
         session_state['ties_in_row'] = 0
         session_state['wins_in_row'] = 0
         session_state['last_query_moment'] = time()
+        if session_state['limit_of_game']:
+            session_state['limit_game_score']['looses'] += 1
         return session_state
+
+
+def get_stars():
+    return [{'title': 'Оцените, если понравилось 😉',
+            'hide': False,
+            'url': 'https://dialogs.yandex.ru/store/skills/09946070-kamen-nozhnicy-bumag'
+            }]
+
+
+def limit_game(session_state):
+
+    return session_state

@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from . import dialogs, constants, helpers
 
 # Функция для непосредственной обработки диалога.
@@ -11,14 +13,12 @@ def handle_dialog(sessionStorage, req, res):
     if req['session']['new']:
         # Это новый пользователь.
         # Инициализируем сессию и поприветствуем его.
-
         res['response']['text'], res['response']['tts'], sessionStorage[session_id] = \
             dialogs.new_session()
         res['response']['buttons'] = helpers.get_suggests(is_base_game=True)
         return
 
-    session_stat = sessionStorage[session_id].copy()
-    is_lizard_spock = session_stat['is_lizard_spock']
+    is_lizard_spock = sessionStorage[session_id]['is_lizard_spock']
 
     if not is_lizard_spock:
         valid_game_answers = constants.VALID_GAME_ANSWERS
@@ -30,26 +30,55 @@ def handle_dialog(sessionStorage, req, res):
     if user_answer in valid_game_answers:
         # Если пользователь прислал один из вариантов, то играем с ним
         text_answer, sound_answer, round_result = helpers.game_status(req['request']['command'].lower(),
-                                                                      is_lizard_spock)
-
+                                                                      is_lizard_spock=is_lizard_spock,
+                                                                      is_limit=sessionStorage[session_id]['limit_of_game']
+                                                                      )
         # Добавлю сообщение о хорошем потоке 3 в ряд
-        sessionStorage[session_id] = helpers.round_result_encoder(session_stat, round_result)
-        session_stat = sessionStorage[session_id].copy()
-        remarkable_message = dialogs.remarkable_metrics(session_stat, 3)
+        sessionStorage[session_id] = helpers.round_result_encoder(sessionStorage[session_id], round_result)
 
-        if remarkable_message:
-            res['response']['text'] = text_answer + remarkable_message
-            res['response']['tts'] = sound_answer + remarkable_message
+        # если игра лимитная
+        if sessionStorage[session_id]['limit_of_game']:
+
+            # если кто-то победил в лимитной игре
+            if sessionStorage[session_id]['limit_game_score']['wins'] == sessionStorage[session_id]['limit_of_game'] or\
+                sessionStorage[session_id]['limit_game_score']['looses'] == sessionStorage[session_id]['limit_of_game']:
+
+                stats_of_limit, stats_of_limit_speech = dialogs.stats_of_limit_gameover(
+                    sessionStorage[session_id]['limit_game_score'])
+                sessionStorage[session_id]['limit_game_is_ended'] = True
+
+                new_limit_game_inv, new_limit_game_inv_speech = dialogs.new_limit_game_invitation()
+
+                res['response']['text'] = text_answer + stats_of_limit + new_limit_game_inv
+                res['response']['tts'] = sound_answer + stats_of_limit_speech + new_limit_game_inv_speech
+                res['response']['buttons'] = helpers.get_suggests_new_limit_game_invitation()
+
+            # лимитная игра продолжается
+            else:
+                stats_of_limit, stats_of_limit_speech = dialogs.stats_of_limit(
+                    sessionStorage[session_id]['limit_game_score'])
+
+                res['response']['text'] = text_answer + stats_of_limit
+                res['response']['tts'] = sound_answer + stats_of_limit_speech
+
+                res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
+
+        # свободная игра
         else:
-            res['response']['text'] = text_answer
-            res['response']['tts'] = sound_answer
+            remarkable_message = dialogs.remarkable_metrics(sessionStorage[session_id], 3)
+            if remarkable_message:
+                res['response']['text'] = text_answer + remarkable_message
+                res['response']['tts'] = sound_answer + remarkable_message
+            else:
+                res['response']['text'] = text_answer
+                res['response']['tts'] = sound_answer
 
-        res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
+            res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
         return
 
     # если в запросе пользователя есть упоминание статистики, то верну статистику сессии
     elif 'статистик' in user_answer:
-        res['response']['text'], res['response']['tts'] = dialogs.statistics(session_stat)
+        res['response']['text'], res['response']['tts'] = dialogs.statistics(sessionStorage[session_id])
         res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
         return
 
@@ -63,7 +92,8 @@ def handle_dialog(sessionStorage, req, res):
             'правил' in user_answer:
 
         res['response']['text'], res['response']['tts'] = dialogs.help_answer()
-        res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
+        res['response']['buttons'] = helpers.get_stars() + helpers.get_suggests(is_base_game=not is_lizard_spock)
+
         return
 
     # осознанное переключением пользователем на сложный вариант игры
@@ -91,6 +121,14 @@ def handle_dialog(sessionStorage, req, res):
         res['response']['buttons'] = helpers.get_suggests(is_base_game=False)
         return
 
+    # правила ящерицы-спока
+    elif 'как играт' in user_answer and \
+        'сложную' in user_answer:
+
+        res['response']['text'], res['response']['tts'] = dialogs.lizard_spock_rules()
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
+        return
+
     # возврат к простому варианту игры
     elif 'обычная игра' in user_answer or \
             'простая игра' in user_answer:
@@ -106,6 +144,96 @@ def handle_dialog(sessionStorage, req, res):
         res['response']['buttons'] = helpers.get_suggests(is_base_game=True)
         return
 
+    # игра до определённого предела
+    # проверяю, что есть число, притом только 1
+    # and len(req['nlu']['entities']) == 1 \
+    elif ('играть до' in user_answer or 'до ' in user_answer) \
+            and 'побед' in user_answer \
+            and len(req['request']['nlu']['entities']) == 1 \
+            and req['request']['nlu']['entities'][0]['type'] == 'YANDEX.NUMBER':
+
+        # Проверяю, что перед новым матчем всё по нулям
+        sessionStorage[session_id]['limit_game_score'] = {'wins': 0, 'looses': 0}
+        sessionStorage[session_id]['limit_game_is_ended'] = False
+        sessionStorage[session_id]['limit_of_game'] = req['request']['nlu']['entities'][0]['value']
+
+        res['response']['text'], res['response']['tts'] = \
+            dialogs.start_limit_game(sessionStorage[session_id]['limit_of_game'])
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
+        return
+
+    # спрошу, хочет ли пользователь сыграть ещё раз лимитную игру
+    # если да, то сохраню лимит и сброшу счёт
+    elif user_answer in ['да', 'да!', 'Да', 'Да!'] and sessionStorage[session_id]['limit_game_is_ended'] == True:
+        # сброшу состояние матча
+        sessionStorage[session_id]['limit_game_score'] = {'wins': 0, 'looses': 0}
+        sessionStorage[session_id]['limit_game_is_ended'] = False
+
+        res['response']['text'], res['response']['tts'] = \
+            dialogs.start_limit_game(sessionStorage[session_id]['limit_of_game'])
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
+        return
+
+    # если нет, то вернусь к стандартной игре
+    elif user_answer in ['нет', 'нет!', 'Нет!', 'Нет'] and sessionStorage[session_id]['limit_game_is_ended'] == True:
+        # сброшу состояние матча
+        sessionStorage[session_id]['limit_of_game'] = None
+
+        res['response']['text'], res['response']['tts'] = dialogs.back_from_limit_to_stand_game()
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
+        return
+
+    # проверка, если распозналось более одного числа, попрошу повторить команду
+    elif ('играть до' in user_answer or 'до ' in user_answer) \
+            and 'побед' in user_answer \
+            and len([
+                    en['value'] for en in req['request']['nlu']['entities']
+                    if en['type'] == 'YANDEX.NUMBER'
+                    ]) > 1:
+
+        res['response']['text'], res['response']['tts'] = \
+            dialogs.to_match_numbers_in_limit_game()
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
+        return
+
+    # проверка, если не распозналось чисел совсем
+    elif ('играть до' in user_answer or 'до ' in user_answer) \
+            and 'побед' in user_answer \
+            and len([
+                    en['value'] for en in req['request']['nlu']['entities']
+                    if en['type'] == 'YANDEX.NUMBER'
+                    ]) == 0:
+
+        res['response']['text'], res['response']['tts'] = \
+            dialogs.no_numbers_in_limit_game()
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
+        return
+
+    # прерываение матча
+    elif ('прерват' in user_answer or 'останови' in user_answer) \
+            and 'матч' in user_answer \
+            and sessionStorage[session_id]['limit_of_game']:
+
+        # всё возвращаем к начальному состоянию
+        sessionStorage[session_id]['limit_game_score'] = {'wins': 0, 'looses': 0}
+        sessionStorage[session_id]['limit_game_is_ended'] = False
+        sessionStorage[session_id]['limit_of_game'] = None
+
+        res['response']['text'], res['response']['tts'] = \
+            dialogs.interrupt_limit_game()
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
+        return
+
+
+    elif ('прерват' in user_answer or 'останови' in user_answer) \
+            and 'матч' in user_answer \
+            and not sessionStorage[session_id]['limit_of_game']:
+
+        res['response']['text'], res['response']['tts'] = \
+            dialogs.already_interrupt_limit_game()
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
+        return
+
     # Если нет, то снова предлагаем сыграть
     res['response']['text'], res['response']['tts'] = dialogs.help_answer()
-    res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
+    res['response']['buttons'] = helpers.get_stars() + helpers.get_suggests(is_base_game=not is_lizard_spock)

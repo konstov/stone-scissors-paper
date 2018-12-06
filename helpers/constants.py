@@ -64,7 +64,13 @@ BLANK_STATS = {
         'ties_in_row': 0,
         'looses_in_row': 0,
         'last_query_moment': None,
-        'is_lizard_spock': False
+        'is_lizard_spock': False,
+        'limit_of_game': None,
+        'limit_game_is_eneded': False,
+        'limit_game_score': {
+            'wins': 0,
+            'looses': 0
+        }
     }
 
 WIN_AND_LOOSE  ={
