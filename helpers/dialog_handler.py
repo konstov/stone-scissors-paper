@@ -30,7 +30,9 @@ def handle_dialog(sessionStorage, req, res):
     if user_answer in valid_game_answers:
         # Если пользователь прислал один из вариантов, то играем с ним
         text_answer, sound_answer, round_result = helpers.game_status(req['request']['command'].lower(),
-                                                                      is_lizard_spock)
+                                                                      is_lizard_spock=is_lizard_spock,
+                                                                      is_limit=sessionStorage[session_id]['limit_of_game']
+                                                                      )
         # Добавлю сообщение о хорошем потоке 3 в ряд
         sessionStorage[session_id] = helpers.round_result_encoder(sessionStorage[session_id], round_result)
 
@@ -119,6 +121,14 @@ def handle_dialog(sessionStorage, req, res):
         res['response']['buttons'] = helpers.get_suggests(is_base_game=False)
         return
 
+    # правила ящерицы-спока
+    elif 'как играт' in user_answer and \
+        'сложную' in user_answer:
+
+        res['response']['text'], res['response']['tts'] = dialogs.lizard_spock_rules()
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
+        return
+
     # возврат к простому варианту игры
     elif 'обычная игра' in user_answer or \
             'простая игра' in user_answer:
@@ -196,6 +206,31 @@ def handle_dialog(sessionStorage, req, res):
 
         res['response']['text'], res['response']['tts'] = \
             dialogs.no_numbers_in_limit_game()
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
+        return
+
+    # прерываение матча
+    elif ('прерват' in user_answer or 'останови' in user_answer) \
+            and 'матч' in user_answer \
+            and sessionStorage[session_id]['limit_of_game']:
+
+        # всё возвращаем к начальному состоянию
+        sessionStorage[session_id]['limit_game_score'] = {'wins': 0, 'looses': 0}
+        sessionStorage[session_id]['limit_game_is_ended'] = False
+        sessionStorage[session_id]['limit_of_game'] = None
+
+        res['response']['text'], res['response']['tts'] = \
+            dialogs.interrupt_limit_game()
+        res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
+        return
+
+
+    elif ('прерват' in user_answer or 'останови' in user_answer) \
+            and 'матч' in user_answer \
+            and not sessionStorage[session_id]['limit_of_game']:
+
+        res['response']['text'], res['response']['tts'] = \
+            dialogs.already_interrupt_limit_game()
         res['response']['buttons'] = helpers.get_suggests(is_base_game=not is_lizard_spock)
         return
 

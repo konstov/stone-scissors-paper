@@ -21,7 +21,7 @@ def new_round_invitation(is_loose):
 
 
 # результат матча
-def game_status(user_choice, is_lizard_spock):
+def game_status(user_choice, is_lizard_spock, is_limit):
     if is_lizard_spock:
         bot_choice = answer(constants.LIZARD_SPOCK_BOT_ANSWERS)
         win_and_loose = constants.LIZARD_SPOCK_WIN_AND_LOOSE
@@ -37,7 +37,8 @@ def game_status(user_choice, is_lizard_spock):
         text_answer, sound_answer = dialogs.prepare_answers(bot_choice=bot_choice,
                                                             bot_choice_text_for_speech=bot_choice_text_for_speech,
                                                             is_looser=False,
-                                                            round_result=round_result)
+                                                            round_result=round_result,
+                                                            is_limit=is_limit)
 
     # проигрыш
     elif user_choice.lower() in win_and_loose[bot_choice_text]:
@@ -45,7 +46,8 @@ def game_status(user_choice, is_lizard_spock):
         text_answer, sound_answer = dialogs.prepare_answers(bot_choice=bot_choice,
                                                             bot_choice_text_for_speech=bot_choice_text_for_speech,
                                                             is_looser=True,
-                                                            round_result=round_result)
+                                                            round_result=round_result,
+                                                            is_limit=is_limit)
 
     # победа
     else:
@@ -53,7 +55,8 @@ def game_status(user_choice, is_lizard_spock):
         text_answer, sound_answer = dialogs.prepare_answers(bot_choice=bot_choice,
                                                             bot_choice_text_for_speech=bot_choice_text_for_speech,
                                                             is_looser=False,
-                                                            round_result=round_result)
+                                                            round_result=round_result,
+                                                            is_limit=is_limit)
 
     return text_answer, sound_answer, round_result
 
