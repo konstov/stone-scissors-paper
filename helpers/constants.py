@@ -66,7 +66,7 @@ BLANK_STATS = {
         'last_query_moment': None,
         'is_lizard_spock': False,
         'limit_of_game': None,
-        'limit_game_is_eneded': False,
+        'limit_game_is_ended': False,
         'limit_game_score': {
             'wins': 0,
             'looses': 0
